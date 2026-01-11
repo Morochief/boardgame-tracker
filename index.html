@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎲 Boardgame Tracker - Cloud</title>
+    <title>🎲 Boardgame Tracker - Justice</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -43,10 +43,16 @@
         }
         
         .glass-danger {
-            background: rgba(127, 29, 29, 0.4);
+            background: rgba(69, 10, 10, 0.6);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(239, 68, 68, 0.3);
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.1);
+        }
+
+        .glass-success {
+            background: rgba(6, 78, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
         
         /* Animaciones */
@@ -63,7 +69,6 @@
         
         /* SweetAlert Dark */
         .swal2-popup { background: #1e293b !important; border: 1px solid #334155 !important; color: #fff !important; }
-        .swal-table-row:nth-child(even) { background: rgba(255,255,255,0.05); }
         
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
@@ -98,6 +103,9 @@
             <button onclick="nav('dashboard')" class="nav-btn active flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="dashboard">
                 <i class="fas fa-chart-pie w-5"></i> Dashboard
             </button>
+            <button onclick="nav('justice')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="justice">
+                <i class="fas fa-balance-scale w-5"></i> Justicia
+            </button>
             <button onclick="nav('register')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="register">
                 <i class="fas fa-plus-circle w-5"></i> Nueva Partida
             </button>
@@ -115,12 +123,12 @@
         <section id="dashboard" class="section active">
             <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-neon-violet">📊</span> Estadísticas</h2>
             
-            <div id="sanctionsPanel" class="hidden mb-8 glass-danger p-5 rounded-2xl animate-pulse">
-                <h3 class="font-gaming text-neon-red text-xl mb-2 flex items-center gap-2">
-                    <i class="fas fa-skull"></i> WALL OF SHAME
-                </h3>
-                <p class="text-xs text-red-200 mb-3">Jugadores ausentes en las últimas 3 reuniones consecutivas:</p>
-                <div id="absentList" class="flex flex-wrap gap-2"></div>
+            <div id="dashboardAlert" class="hidden mb-6 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-red-500/20 transition-all" onclick="nav('justice')">
+                <div class="flex items-center gap-3">
+                    <div class="animate-pulse w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span class="text-red-300 text-sm font-bold">¡Hay sanciones activas!</span>
+                </div>
+                <i class="fas fa-chevron-right text-red-400"></i>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -146,6 +154,26 @@
                 <div class="glass p-5 rounded-2xl">
                     <h3 class="text-sm font-bold mb-4 text-slate-300">Juegos</h3>
                     <div class="h-48"><canvas id="chartGames"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="justice" class="section">
+            <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2 text-neon-red">
+                <span class="text-3xl">⚖️</span> Sala de Justicia
+            </h2>
+
+            <div id="wallOfShameCard" class="mb-8 p-6 rounded-2xl transition-all duration-500">
+                </div>
+
+            <div class="glass p-6 rounded-2xl">
+                <h3 class="font-gaming text-lg mb-4 text-slate-300 flex items-center gap-2">
+                    <i class="fas fa-calendar-times text-slate-500"></i> Bitácora de Ausencias
+                </h3>
+                <p class="text-xs text-slate-500 mb-4">Registro histórico de quién faltó en cada fecha de juego.</p>
+                
+                <div id="absenceBoard" class="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                    <div class="text-center text-slate-500 py-4">Cargando datos...</div>
                 </div>
             </div>
         </section>
@@ -193,7 +221,6 @@
 
         <section id="history" class="section">
             <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-neon-pink">📜</span> Historial</h2>
-            <p class="text-xs text-slate-400 mb-4">Toca una partida para ver detalles y puntajes.</p>
             <div id="listHistory" class="space-y-3 pb-20">
                 <div class="text-center py-10 text-slate-500">Cargando datos...</div>
             </div>
@@ -233,10 +260,11 @@
     </main>
 
     <nav class="md:hidden fixed bottom-0 w-full glass border-t border-slate-800 p-2 z-50 flex justify-around">
-        <button onclick="nav('dashboard')" class="nav-btn active flex flex-col items-center p-2 rounded-lg text-xs" data-target="dashboard"><i class="fas fa-chart-pie text-lg mb-1"></i>Inicio</button>
-        <button onclick="nav('register')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="register"><i class="fas fa-plus-circle text-lg mb-1"></i>Nuevo</button>
-        <button onclick="nav('history')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="history"><i class="fas fa-history text-lg mb-1"></i>Historial</button>
-        <button onclick="nav('settings')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="settings"><i class="fas fa-cog text-lg mb-1"></i>Ajustes</button>
+        <button onclick="nav('dashboard')" class="nav-btn active flex flex-col items-center p-2 rounded-lg text-xs" data-target="dashboard"><i class="fas fa-chart-pie text-lg mb-1"></i></button>
+        <button onclick="nav('justice')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="justice"><i class="fas fa-balance-scale text-lg mb-1"></i></button>
+        <button onclick="nav('register')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="register"><i class="fas fa-plus-circle text-2xl mb-1 text-neon-cyan"></i></button>
+        <button onclick="nav('history')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="history"><i class="fas fa-history text-lg mb-1"></i></button>
+        <button onclick="nav('settings')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="settings"><i class="fas fa-cog text-lg mb-1"></i></button>
     </nav>
 
     <script>
@@ -275,7 +303,7 @@
                 matches = data;
                 setOnlineStatus(true);
                 updateUI();
-                checkSanctions(); // Verificar ausentes
+                renderJusticeModule(); // Renderizar módulo de justicia
             } else {
                 console.error("Error Supabase:", error);
             }
@@ -313,54 +341,92 @@
             }
         }
 
-        // --- 5. LÓGICA DE SANCIONES (AUSENCIAS) ---
-        function checkSanctions() {
-            if (matches.length === 0) return;
+        // --- 5. MÓDULO DE JUSTICIA (SANCIONES Y AUSENCIAS) ---
+        function renderJusticeModule() {
+            // A. Logica de Fechas Únicas
+            const datesMap = {}; // { "2023-10-20": Set("Juan", "Pedro") }
+            matches.forEach(m => {
+                const date = m.created_at.split('T')[0];
+                if (!datesMap[date]) datesMap[date] = new Set();
+                m.players.forEach(p => datesMap[date].add(p));
+            });
 
-            // 1. Obtener todas las fechas únicas donde hubo juego
-            const uniqueDates = [...new Set(matches.map(m => m.created_at.split('T')[0]))].sort().reverse();
+            const uniqueDates = Object.keys(datesMap).sort().reverse();
+
+            // B. Wall of Shame (Ultimas 3 fechas)
+            const wallDiv = document.getElementById('wallOfShameCard');
+            const dashboardAlert = document.getElementById('dashboardAlert');
             
-            // 2. Necesitamos al menos 3 fechas para calcular "3 faltas seguidas"
             if (uniqueDates.length < 3) {
-                document.getElementById('sanctionsPanel').classList.add('hidden');
+                wallDiv.className = 'glass p-6 rounded-2xl text-center';
+                wallDiv.innerHTML = `<h3 class="text-slate-400 font-bold mb-2">Datos Insuficientes</h3><p class="text-xs text-slate-500">Se necesitan al menos 3 fechas de juego para calcular sanciones.</p>`;
+                dashboardAlert.classList.add('hidden');
+            } else {
+                const last3 = uniqueDates.slice(0, 3);
+                const offenders = [];
+                
+                config.players.forEach(p => {
+                    const presentIn1 = datesMap[last3[0]].has(p);
+                    const presentIn2 = datesMap[last3[1]].has(p);
+                    const presentIn3 = datesMap[last3[2]].has(p);
+                    
+                    if (!presentIn1 && !presentIn2 && !presentIn3) offenders.push(p);
+                });
+
+                if (offenders.length > 0) {
+                    // Hay sancionados
+                    wallDiv.className = 'glass-danger p-6 rounded-2xl border border-red-500 animate-pulse';
+                    wallDiv.innerHTML = `
+                        <h3 class="font-gaming text-2xl text-red-500 mb-2 flex items-center justify-center gap-3"><i class="fas fa-skull"></i> WALL OF SHAME</h3>
+                        <p class="text-red-200 text-sm text-center mb-4">Jugadores desaparecidos por 3 fechas consecutivas:</p>
+                        <div class="flex flex-wrap justify-center gap-3">
+                            ${offenders.map(o => `<span class="bg-red-900 text-red-200 px-4 py-2 rounded-full font-bold border border-red-500 shadow-[0_0_10px_red]">${o}</span>`).join('')}
+                        </div>
+                        <p class="text-xs text-red-400 mt-4 text-center">Castigo sugerido: Traer la comida la próxima vez.</p>
+                    `;
+                    dashboardAlert.classList.remove('hidden');
+                } else {
+                    // Todos limpios
+                    wallDiv.className = 'glass-success p-6 rounded-2xl text-center';
+                    wallDiv.innerHTML = `
+                        <h3 class="font-gaming text-emerald-400 text-xl mb-2"><i class="fas fa-check-circle"></i> Zona Segura</h3>
+                        <p class="text-emerald-200 text-sm">Nadie tiene 3 faltas consecutivas. ¡Buen grupo!</p>
+                    `;
+                    dashboardAlert.classList.add('hidden');
+                }
+            }
+
+            // C. Tablero de Ausencias (Bitácora)
+            const boardDiv = document.getElementById('absenceBoard');
+            if(uniqueDates.length === 0) {
+                boardDiv.innerHTML = '<p class="text-center text-slate-500">Sin datos registrados</p>';
                 return;
             }
 
-            // 3. Tomar las últimas 3 fechas
-            const last3Dates = uniqueDates.slice(0, 3);
-            
-            // 4. Identificar jugadores ausentes en ESAS 3 fechas
-            const offenders = [];
-
-            config.players.forEach(player => {
-                // Verificar si jugó en la fecha 1, fecha 2 Y fecha 3
-                let playedDate1 = matches.some(m => m.created_at.startsWith(last3Dates[0]) && m.players.includes(player));
-                let playedDate2 = matches.some(m => m.created_at.startsWith(last3Dates[1]) && m.players.includes(player));
-                let playedDate3 = matches.some(m => m.created_at.startsWith(last3Dates[2]) && m.players.includes(player));
-
-                // Si NO jugó en ninguna de las 3, es sancionado
-                if (!playedDate1 && !playedDate2 && !playedDate3) {
-                    offenders.push(player);
-                }
-            });
-
-            // 5. Mostrar en UI
-            const panel = document.getElementById('sanctionsPanel');
-            const list = document.getElementById('absentList');
-            
-            if (offenders.length > 0) {
-                list.innerHTML = offenders.map(p => `
-                    <span class="bg-red-900/50 border border-red-500 text-red-300 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">
-                        <i class="fas fa-ban"></i> ${p}
-                    </span>
-                `).join('');
-                panel.classList.remove('hidden');
-            } else {
-                panel.classList.add('hidden');
-            }
+            boardDiv.innerHTML = uniqueDates.map(date => {
+                const presentSet = datesMap[date];
+                const absentList = config.players.filter(p => !presentSet.has(p));
+                const niceDate = new Date(date).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+                
+                return `
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                        <div class="flex items-center gap-3 min-w-[100px]">
+                            <div class="bg-slate-700 px-2 py-1 rounded text-xs font-bold text-slate-300 text-center">
+                                ${niceDate.split(' ')[0]}<br><span class="text-lg text-white">${niceDate.split(' ')[1]}</span>
+                            </div>
+                        </div>
+                        <div class="flex-1 text-right">
+                            ${absentList.length > 0 
+                                ? `<div class="flex flex-wrap justify-end gap-1">${absentList.map(a => `<span class="text-[10px] bg-red-900/40 text-red-300 px-2 py-0.5 rounded border border-red-900">${a}</span>`).join('')}</div>`
+                                : `<span class="text-xs text-emerald-400 font-bold">¡Asistencia Perfecta! ✨</span>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        // --- 6. LÓGICA DE INTERFAZ (UI) ---
+        // --- 6. LÓGICA DE UI ---
         function nav(targetId) {
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             document.getElementById(targetId).classList.add('active');
@@ -371,10 +437,10 @@
             });
 
             if(targetId === 'register') prepareRegisterForm();
+            if(targetId === 'justice') renderJusticeModule();
         }
 
         function updateUI() {
-            // Dashboard KPI: Total
             document.getElementById('kpiTotal').innerText = matches.length;
             
             if(matches.length > 0) {
@@ -395,7 +461,6 @@
                 updateCharts(wins, games);
             }
 
-            // Historial con Click para Detalles
             const list = document.getElementById('listHistory');
             list.innerHTML = matches.map(m => {
                 const date = new Date(m.created_at).toLocaleDateString();
@@ -412,14 +477,11 @@
             }).join('');
         }
 
-        // --- 7. DETALLES DE PARTIDA (MODAL) ---
         function showMatchDetails(matchId) {
             const m = matches.find(x => x.id === matchId);
             if(!m) return;
 
             let detailsHTML = `<div class="text-left space-y-2">`;
-            
-            // Ordenar jugadores: Ganador primero, luego por puntos si hay
             const sortedPlayers = [...m.players].sort((a,b) => {
                 if(a === m.winner) return -1;
                 if(b === m.winner) return 1;
@@ -435,30 +497,23 @@
                 
                 detailsHTML += `
                     <div class="flex justify-between items-center p-3 rounded-lg border ${style}">
-                        <div class="flex items-center gap-3">
-                            ${icon} <span class="font-bold">${p}</span>
-                        </div>
+                        <div class="flex items-center gap-3">${icon} <span class="font-bold">${p}</span></div>
                         <div class="font-mono text-sm">${score}</div>
-                    </div>
-                `;
+                    </div>`;
             });
             detailsHTML += `</div>`;
-
-            if(m.notes) {
-                detailsHTML += `<div class="mt-4 p-3 bg-slate-900 rounded-lg text-xs text-slate-400 italic">"${m.notes}"</div>`;
-            }
+            if(m.notes) detailsHTML += `<div class="mt-4 p-3 bg-slate-900 rounded-lg text-xs text-slate-400 italic">"${m.notes}"</div>`;
 
             Swal.fire({
                 title: m.game,
                 html: detailsHTML,
                 showConfirmButton: false,
                 showCloseButton: true,
-                background: '#1e293b',
-                color: '#fff'
+                background: '#1e293b', color: '#fff'
             });
         }
 
-        // --- 8. FORMULARIO ---
+        // --- 7. FORMULARIO ---
         function prepareRegisterForm() {
             const select = document.getElementById('inputGame');
             select.innerHTML = '<option value="">Selecciona...</option>';
@@ -575,7 +630,7 @@
             }
         }
 
-        // --- 9. AJUSTES ---
+        // --- 8. AJUSTES ---
         function renderSettings() {
             document.getElementById('listPlayers').innerHTML = config.players.map(p => 
                 `<div class="bg-slate-700 px-3 py-1 rounded-full text-xs flex items-center gap-2">${p} <i onclick="removePlayer('${p}')" class="fas fa-times cursor-pointer hover:text-red-400"></i></div>`
@@ -630,7 +685,7 @@
             }
         }
 
-        // --- 10. GRÁFICOS ---
+        // --- 9. GRÁFICOS ---
         let chartWins, chartGames;
         function initCharts() {
             Chart.defaults.color = '#64748b';
