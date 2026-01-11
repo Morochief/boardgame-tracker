@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎲 Boardgame Tracker - Full Sync</title>
+    <title>🎲 Boardgame Tracker - Organized</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -119,40 +119,36 @@
         let activePlayers = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
-            initCharts(); 
-            await loadAllData(); 
-            setupRealtime(); 
-            nav('dashboard');
+            initCharts(); await loadAllData(); setupRealtime(); nav('dashboard');
         });
 
-        // --- CARGA DE DATOS UNIFICADA ---
         async function loadAllData() {
             setOnlineStatus(false);
             try {
-                // 1. Cargar Configuración (Global)
                 const { data: configData, error: configError } = await sbClient.from('app_config').select('data').eq('key', 'main_config').single();
-                if (configData) { config = configData.data; }
-                
-                // 2. Cargar Partidas
+                if (configData) { 
+                    config = configData.data; 
+                    // ORDENAR AL CARGAR
+                    config.players.sort((a, b) => a.nickname.localeCompare(b.nickname));
+                    config.games.sort((a, b) => a.name.localeCompare(b.name));
+                }
                 const { data: matchesData, error: matchesError } = await sbClient.from('matches').select('*').order('played_date', { ascending: false }).order('created_at', { ascending: false });
                 if (matchesData) { matches = matchesData; }
 
                 if (!configError && !matchesError) {
                     setOnlineStatus(true);
-                    updateUI(); 
-                    renderJusticeModule();
-                    renderSettings();
-                } else {
-                    console.error("Error cargando datos:", configError, matchesError);
-                }
+                    updateUI(); renderJusticeModule(); renderSettings();
+                } else { console.error(configError, matchesError); }
             } catch (e) { console.error(e); }
         }
 
-        // --- SINCRONIZACIÓN CONFIG (CORREGIDA) ---
         async function saveConfigToCloud() {
-            // FIX: Usamos onConflict para forzar el UPDATE si ya existe el key
+            // ORDENAR ANTES DE GUARDAR
+            config.players.sort((a, b) => a.nickname.localeCompare(b.nickname));
+            config.games.sort((a, b) => a.name.localeCompare(b.name));
+            
             const { error } = await sbClient.from('app_config').upsert({ key: 'main_config', data: config }, { onConflict: 'key' });
-            if (error) Swal.fire('Error guardando config', error.message, 'error');
+            if (error) Swal.fire('Error', error.message, 'error');
             else renderSettings();
         }
 
@@ -166,16 +162,10 @@
 
         function setOnlineStatus(isOnline) {
             const ind = document.getElementById('statusIndicator'); const desk = document.getElementById('desktopStatus');
-            if(isOnline) { 
-                if(ind) ind.classList.replace('bg-red-500','bg-green-500'); 
-                if(desk) { desk.innerText='● Conectado'; desk.className='text-[10px] text-green-400'; }
-            } else {
-                if(ind) ind.classList.replace('bg-green-500','bg-red-500');
-                if(desk) { desk.innerText='● Desconectado'; desk.className='text-[10px] text-red-400'; }
-            }
+            if(isOnline) { if(ind) ind.classList.replace('bg-red-500','bg-green-500'); if(desk) { desk.innerText='● Conectado'; desk.className='text-[10px] text-green-400'; } } 
+            else { if(ind) ind.classList.replace('bg-green-500','bg-red-500'); if(desk) { desk.innerText='● Desconectado'; desk.className='text-[10px] text-red-400'; } }
         }
 
-        // --- LÓGICA DE JUSTICIA ---
         function renderJusticeModule() {
             const datesMap = {}; matches.forEach(m => { const d = m.played_date || m.created_at.split('T')[0]; if (!datesMap[d]) datesMap[d] = new Set(); m.players.forEach(p => datesMap[d].add(p)); });
             const uniqueDates = Object.keys(datesMap).sort().reverse();
@@ -201,7 +191,6 @@
             }).join('');
         }
 
-        // --- UI ---
         function nav(id) { document.querySelectorAll('.section').forEach(e => e.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(e => { e.classList.remove('active'); if(e.dataset.target===id) e.classList.add('active'); }); if(id==='register') prepareRegisterForm(); if(id==='justice') renderJusticeModule(); }
 
         function updateUI() {
@@ -222,11 +211,8 @@
 
         async function deleteMatch(id, event) {
             event.stopPropagation();
-            const res = await Swal.fire({ title: '¿Borrar partida?', text: "Esto afectará las estadísticas.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, borrar', background: '#1e293b', color: '#fff' });
-            if(res.isConfirmed) {
-                const { error } = await sbClient.from('matches').delete().eq('id', id);
-                if(error) Swal.fire('Error', error.message, 'error');
-                else { loadAllData(); Swal.fire({title:'Borrado',icon:'success',timer:1000,showConfirmButton:false}); }
+            if((await Swal.fire({title:'¿Borrar partida?',text:"Afectará las estadísticas.",icon:'warning',showCancelButton:true,confirmButtonColor:'#d33',background:'#1e293b',color:'#fff'})).isConfirmed) {
+                await sbClient.from('matches').delete().eq('id', id);
             }
         }
 
@@ -241,17 +227,13 @@
             Swal.fire({ title: m.game, html: html, showConfirmButton: false, showCloseButton: true, background: '#1e293b', color: '#fff' });
         }
 
-        // --- FORMULARIO ---
         function prepareRegisterForm() {
             document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
             const s = document.getElementById('inputGame'); s.innerHTML='<option value="">Selecciona...</option>';
             config.games.forEach(g=>s.innerHTML+=`<option value="${g.name}" data-type="${g.type}">${g.name}</option>`);
             const gp = document.getElementById('gridPlayers');
             if(config.players.length===0) { document.getElementById('msgNoPlayers').classList.remove('hidden'); gp.innerHTML=''; }
-            else { 
-                document.getElementById('msgNoPlayers').classList.add('hidden'); 
-                gp.innerHTML=config.players.map(obj => `<div onclick="togglePlayer('${obj.nickname}',this)" class="cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded-lg text-center text-xs text-slate-300 select-none">${obj.nickname}</div>`).join(''); 
-            }
+            else { document.getElementById('msgNoPlayers').classList.add('hidden'); gp.innerHTML=config.players.map(obj => `<div onclick="togglePlayer('${obj.nickname}',this)" class="cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded-lg text-center text-xs text-slate-300 select-none">${obj.nickname}</div>`).join(''); }
             activePlayers=[]; updateGameMode();
         }
         function togglePlayer(n,e) {
@@ -274,7 +256,6 @@
             if(!error) { Swal.fire({icon:'success',title:'Guardado',timer:1500,showConfirmButton:false}); nav('dashboard'); } else { Swal.fire('Error',error.message,'error'); }
         }
 
-        // --- GESTIÓN CONFIG (NUBE) ---
         function renderSettings() {
             document.getElementById('listPlayers').innerHTML=config.players.map((p, idx)=>`<div class="bg-slate-700 px-3 py-2 rounded-lg text-xs flex justify-between items-center border border-slate-600"><div><span class="font-bold text-neon-cyan">${p.nickname}</span>${p.realName ? `<span class="text-[10px] text-slate-400 ml-1">(${p.realName})</span>` : ''}</div><div class="flex gap-2"><i onclick="loadPlayerForEdit(${idx})" class="fas fa-pencil-alt cursor-pointer text-slate-400 hover:text-white"></i><i onclick="removePlayer(${idx})" class="fas fa-trash cursor-pointer text-slate-400 hover:text-red-400"></i></div></div>`).join('');
             document.getElementById('listGames').innerHTML=config.games.map(g=>`<div class="flex justify-between bg-slate-800 p-2 rounded text-xs border border-slate-700"><span>${g.name} <span class="text-[9px] text-slate-500 uppercase">${g.type==='score'?'Puntos':'Directo'}</span></span><i onclick="removeGame('${g.name}')" class="fas fa-trash cursor-pointer text-slate-500 hover:text-red-400"></i></div>`).join('');
@@ -294,7 +275,6 @@
             config.games.push({name:n,type:isS?'score':'direct'}); document.getElementById('newGameName').value=''; saveConfigToCloud();
         }
         function removeGame(n) { config.games=config.games.filter(g=>g.name!==n); saveConfigToCloud(); }
-        function resetLocalData() { if(confirm("¿Reset local?")){localStorage.removeItem('bg_config'); location.reload();} }
         
         let chartWins, chartGames;
         function initCharts() {
