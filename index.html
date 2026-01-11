@@ -148,9 +148,10 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- SINCRONIZACIÓN CONFIG ---
+        // --- SINCRONIZACIÓN CONFIG (CORREGIDA) ---
         async function saveConfigToCloud() {
-            const { error } = await sbClient.from('app_config').upsert({ key: 'main_config', data: config });
+            // FIX: Usamos onConflict para forzar el UPDATE si ya existe el key
+            const { error } = await sbClient.from('app_config').upsert({ key: 'main_config', data: config }, { onConflict: 'key' });
             if (error) Swal.fire('Error guardando config', error.message, 'error');
             else renderSettings();
         }
@@ -221,8 +222,11 @@
 
         async function deleteMatch(id, event) {
             event.stopPropagation();
-            if((await Swal.fire({title:'¿Borrar partida?',text:"Afectará las estadísticas.",icon:'warning',showCancelButton:true,confirmButtonColor:'#d33',background:'#1e293b',color:'#fff'})).isConfirmed) {
-                await sbClient.from('matches').delete().eq('id', id);
+            const res = await Swal.fire({ title: '¿Borrar partida?', text: "Esto afectará las estadísticas.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, borrar', background: '#1e293b', color: '#fff' });
+            if(res.isConfirmed) {
+                const { error } = await sbClient.from('matches').delete().eq('id', id);
+                if(error) Swal.fire('Error', error.message, 'error');
+                else { loadAllData(); Swal.fire({title:'Borrado',icon:'success',timer:1000,showConfirmButton:false}); }
             }
         }
 
@@ -244,7 +248,10 @@
             config.games.forEach(g=>s.innerHTML+=`<option value="${g.name}" data-type="${g.type}">${g.name}</option>`);
             const gp = document.getElementById('gridPlayers');
             if(config.players.length===0) { document.getElementById('msgNoPlayers').classList.remove('hidden'); gp.innerHTML=''; }
-            else { document.getElementById('msgNoPlayers').classList.add('hidden'); gp.innerHTML=config.players.map(obj => `<div onclick="togglePlayer('${obj.nickname}',this)" class="cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded-lg text-center text-xs text-slate-300 select-none">${obj.nickname}</div>`).join(''); }
+            else { 
+                document.getElementById('msgNoPlayers').classList.add('hidden'); 
+                gp.innerHTML=config.players.map(obj => `<div onclick="togglePlayer('${obj.nickname}',this)" class="cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded-lg text-center text-xs text-slate-300 select-none">${obj.nickname}</div>`).join(''); 
+            }
             activePlayers=[]; updateGameMode();
         }
         function togglePlayer(n,e) {
