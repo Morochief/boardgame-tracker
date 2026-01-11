@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎲 Boardgame Tracker - Profiles</title>
+    <title>🎲 Boardgame Tracker - Calendar</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -45,6 +45,9 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        
+        /* Date Input Dark Mode Fix */
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
     </style>
 </head>
 <body class="pb-24 md:pb-0 md:pl-64 min-h-screen overflow-x-hidden">
@@ -110,6 +113,12 @@
         <section id="register" class="section">
             <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-neon-cyan">🎯</span> Nueva Partida</h2>
             <div class="glass p-6 rounded-2xl max-w-xl mx-auto">
+                
+                <div class="mb-5">
+                    <label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Fecha del Juego</label>
+                    <input type="date" id="inputDate" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white">
+                </div>
+
                 <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Juego</label><select id="inputGame" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white" onchange="updateGameMode()"><option value="">Selecciona...</option></select><p id="gameModeHint" class="text-xs mt-2 text-neon-pink hidden"><i class="fas fa-calculator"></i> Modo Puntos Activado</p></div>
                 <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Participantes (Presentes)</label><div id="gridPlayers" class="grid grid-cols-3 gap-2"></div><p id="msgNoPlayers" class="text-xs text-red-400 mt-2 hidden">Ve a Configuración para añadir amigos.</p></div>
                 <div id="sectionScores" class="mb-5 hidden"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Puntajes</label><div id="gridScores" class="grid grid-cols-2 gap-3"></div></div>
@@ -127,31 +136,9 @@
 
         <section id="settings" class="section">
             <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-slate-400">⚙️</span> Ajustes</h2>
-            
             <div class="grid md:grid-cols-2 gap-6">
-                <div class="glass p-5 rounded-2xl">
-                    <h3 class="font-bold mb-4 text-neon-cyan"><i class="fas fa-users"></i> Jugadores</h3>
-                    
-                    <div class="bg-slate-800/50 p-3 rounded-xl mb-4 border border-slate-700">
-                        <input type="hidden" id="editPlayerIndex" value="-1"> <div class="grid grid-cols-2 gap-2 mb-2">
-                            <input id="playerNick" type="text" placeholder="Nickname (Juego)" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-white w-full">
-                            <input id="playerReal" type="text" placeholder="Nombre Real" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-white w-full">
-                        </div>
-                        <button id="btnSavePlayer" onclick="savePlayer()" class="w-full bg-slate-700 hover:bg-neon-cyan/50 hover:text-white text-slate-300 py-2 rounded-lg text-xs font-bold transition-colors">AGREGAR JUGADOR</button>
-                        <button id="btnCancelEdit" onclick="cancelEditPlayer()" class="w-full mt-1 text-red-400 text-xs hidden">Cancelar Edición</button>
-                    </div>
-
-                    <div id="listPlayers" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1"></div>
-                </div>
-
-                <div class="glass p-5 rounded-2xl">
-                    <h3 class="font-bold mb-4 text-neon-violet"><i class="fas fa-dice"></i> Juegos</h3>
-                    <div class="flex gap-2 mb-4">
-                        <input id="newGameName" type="text" placeholder="Nombre del juego" class="flex-1 bg-slate-800 border border-slate-600 rounded-lg p-2 text-sm">
-                        <button onclick="addGame()" class="bg-slate-700 px-4 rounded-lg hover:bg-slate-600"><i class="fas fa-plus"></i></button>
-                    </div>
-                    <div id="listGames" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div>
-                </div>
+                <div class="glass p-5 rounded-2xl"><h3 class="font-bold mb-4 text-neon-cyan"><i class="fas fa-users"></i> Jugadores</h3><div class="bg-slate-800/50 p-3 rounded-xl mb-4 border border-slate-700"><input type="hidden" id="editPlayerIndex" value="-1"><div class="grid grid-cols-2 gap-2 mb-2"><input id="playerNick" type="text" placeholder="Nickname" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-white w-full"><input id="playerReal" type="text" placeholder="Nombre Real" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-white w-full"></div><button id="btnSavePlayer" onclick="savePlayer()" class="w-full bg-slate-700 hover:bg-neon-cyan/50 hover:text-white text-slate-300 py-2 rounded-lg text-xs font-bold transition-colors">AGREGAR JUGADOR</button><button id="btnCancelEdit" onclick="cancelEditPlayer()" class="w-full mt-1 text-red-400 text-xs hidden">Cancelar Edición</button></div><div id="listPlayers" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1"></div></div>
+                <div class="glass p-5 rounded-2xl"><h3 class="font-bold mb-4 text-neon-violet"><i class="fas fa-dice"></i> Juegos</h3><div class="flex gap-2 mb-4"><input id="newGameName" type="text" placeholder="Nombre del juego" class="flex-1 bg-slate-800 border border-slate-600 rounded-lg p-2 text-sm"><button onclick="addGame()" class="bg-slate-700 px-4 rounded-lg hover:bg-slate-600"><i class="fas fa-plus"></i></button></div><div id="listGames" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div></div>
             </div>
             <div class="mt-8 glass p-5 rounded-2xl border border-red-900/30"><h3 class="font-bold mb-4 text-red-400"><i class="fas fa-database"></i> Zona de Datos</h3><button onclick="resetLocalData()" class="w-full p-3 border border-red-500/30 text-red-400 rounded-xl text-sm hover:bg-red-500/10">Reiniciar Configuración Local (No borra la nube)</button></div>
         </section>
@@ -161,7 +148,7 @@
         <button onclick="nav('dashboard')" class="nav-btn active flex flex-col items-center p-2 rounded-lg text-xs" data-target="dashboard"><i class="fas fa-chart-pie text-lg mb-1"></i></button>
         <button onclick="nav('justice')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="justice"><i class="fas fa-balance-scale text-lg mb-1"></i></button>
         <button onclick="nav('register')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="register"><i class="fas fa-plus-circle text-2xl mb-1 text-neon-cyan"></i></button>
-        <button onclick="nav('history')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="history"><i class="fas fa-history text-lg mb-1"></i></button>
+        <button onclick="nav('history')" class="nav-btn flex items-center p-2 rounded-lg text-xs" data-target="history"><i class="fas fa-history text-lg mb-1"></i></button>
         <button onclick="nav('settings')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="settings"><i class="fas fa-cog text-lg mb-1"></i></button>
     </nav>
 
@@ -170,14 +157,11 @@
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnZGV1cm93amF3aXNlZWhvZXRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxNDgxMjksImV4cCI6MjA4MzcyNDEyOX0.abfEkpQgjUXfr0BVeu-6s6dRBxAIqyALfu0ILdLk7VA';
         const sbClient = window.supabase.createClient(SB_URL, SB_KEY);
 
-        // --- MIGRACIÓN DE DATOS (AUTO FIX) ---
         let rawConfig = JSON.parse(localStorage.getItem('bg_config'));
-        // Si players es un array de strings (versión vieja), lo convertimos a objetos
         if (rawConfig && rawConfig.players && typeof rawConfig.players[0] === 'string') {
             rawConfig.players = rawConfig.players.map(name => ({ nickname: name, realName: '' }));
             localStorage.setItem('bg_config', JSON.stringify(rawConfig));
         }
-
         let config = rawConfig || { players: [], games: [] };
         let matches = [];
         let activePlayers = [];
@@ -188,7 +172,8 @@
 
         async function loadData() {
             setOnlineStatus(false);
-            const { data, error } = await sbClient.from('matches').select('*').order('created_at', { ascending: false });
+            // Ordenar por fecha jugada, luego por creación
+            const { data, error } = await sbClient.from('matches').select('*').order('played_date', { ascending: false }).order('created_at', { ascending: false });
             if (!error) { matches = data; setOnlineStatus(true); updateUI(); renderJusticeModule(); }
         }
 
@@ -210,9 +195,14 @@
             }
         }
 
-        // --- LÓGICA DE JUSTICIA ---
         function renderJusticeModule() {
-            const datesMap = {}; matches.forEach(m => { const d = m.created_at.split('T')[0]; if (!datesMap[d]) datesMap[d] = new Set(); m.players.forEach(p => datesMap[d].add(p)); });
+            const datesMap = {};
+            matches.forEach(m => {
+                // Usamos la fecha JUGADA, si no existe, usamos la de creación
+                const date = m.played_date || m.created_at.split('T')[0];
+                if (!datesMap[date]) datesMap[date] = new Set();
+                m.players.forEach(p => datesMap[date].add(p));
+            });
             const uniqueDates = Object.keys(datesMap).sort().reverse();
             const wallDiv = document.getElementById('wallOfShameCard');
             const alertDiv = document.getElementById('dashboardAlert');
@@ -225,7 +215,7 @@
                 const last3 = uniqueDates.slice(0, 3);
                 const offenders = [];
                 config.players.forEach(obj => {
-                    const p = obj.nickname; // Usar nickname
+                    const p = obj.nickname;
                     if (!datesMap[last3[0]].has(p) && !datesMap[last3[1]].has(p) && !datesMap[last3[2]].has(p)) offenders.push(p);
                 });
                 if (offenders.length > 0) {
@@ -244,7 +234,10 @@
             boardDiv.innerHTML = uniqueDates.map(date => {
                 const presentSet = datesMap[date];
                 const absentList = config.players.filter(obj => !presentSet.has(obj.nickname)).map(obj => obj.nickname);
-                const niceDate = new Date(date).toLocaleDateString('es-ES', {weekday:'short',day:'numeric',month:'short'});
+                // Fix timezone issue by treating string as local date
+                const [y,m,d] = date.split('-');
+                const dObj = new Date(y, m-1, d);
+                const niceDate = dObj.toLocaleDateString('es-ES', {weekday:'short',day:'numeric',month:'short'});
                 return `<div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
                     <div class="flex items-center gap-3 min-w-[80px]"><div class="bg-slate-700 px-2 py-1 rounded text-xs font-bold text-slate-300 text-center">${niceDate}</div></div>
                     <div class="flex-1 text-right">${absentList.length > 0 ? `<div class="flex flex-wrap justify-end gap-1">${absentList.map(a => `<span class="text-[10px] bg-red-900/40 text-red-300 px-2 py-0.5 rounded border border-red-900">${a}</span>`).join('')}</div>` : `<span class="text-xs text-emerald-400 font-bold">Asistencia Perfecta</span>`}</div>
@@ -272,7 +265,12 @@
                 updateCharts(wins, games);
             }
             document.getElementById('listHistory').innerHTML = matches.map(m => {
-                const date = new Date(m.created_at).toLocaleDateString();
+                // Usar fecha jugada
+                const dRaw = m.played_date || m.created_at.split('T')[0];
+                const [y,mo,d] = dRaw.split('-');
+                const dObj = new Date(y, mo-1, d);
+                const date = dObj.toLocaleDateString('es-ES');
+                
                 const score = m.scores && m.scores[m.winner] ? `(${m.scores[m.winner]} pts)` : '';
                 return `<div onclick="showMatchDetails(${m.id})" class="cursor-pointer glass p-3 rounded-xl flex justify-between items-center border-l-4 border-neon-cyan hover:bg-slate-800 transition-colors">
                     <div><div class="text-[10px] text-slate-400">${date} • ${m.game}</div><div class="font-bold text-white">${m.winner} <span class="text-neon-pink text-xs">${score}</span></div></div>
@@ -310,6 +308,9 @@
         }
 
         function prepareRegisterForm() {
+            // Set Default Date to Today
+            document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
+
             const s = document.getElementById('inputGame'); s.innerHTML='<option value="">Selecciona...</option>';
             config.games.forEach(g=>s.innerHTML+=`<option value="${g.name}" data-type="${g.type}">${g.name}</option>`);
             const gp = document.getElementById('gridPlayers');
@@ -343,81 +344,45 @@
         }
         async function submitMatch() {
             const g=document.getElementById('inputGame').value, n=document.getElementById('inputNotes').value, w=document.getElementById('inputWinner').value;
+            const date = document.getElementById('inputDate').value;
             let scores={}; document.querySelectorAll('.score-input').forEach(i=>scores[i.dataset.player]=parseInt(i.value)||0);
+            
             if(!g||!w||activePlayers.length<1) return Swal.fire('Faltan datos','','warning');
-            const {error} = await sbClient.from('matches').insert([{game:g,winner:w,players:activePlayers,notes:n,scores:Object.keys(scores).length?scores:null}]);
+            
+            // Insertar con played_date
+            const {error} = await sbClient.from('matches').insert([{game:g,winner:w,players:activePlayers,notes:n,scores:Object.keys(scores).length?scores:null, played_date: date}]);
+            
             if(!error) { Swal.fire({icon:'success',title:'Guardado',timer:1500,showConfirmButton:false}); nav('dashboard'); }
+            else { Swal.fire('Error',error.message,'error'); }
         }
 
-        // --- GESTIÓN DE JUGADORES (OBJETOS) ---
+        // --- GESTIÓN DE JUGADORES Y JUEGOS ---
         function renderSettings() {
-            // Renderizar Lista con Edit y Delete
             document.getElementById('listPlayers').innerHTML=config.players.map((p, idx)=>`
                 <div class="bg-slate-700 px-3 py-2 rounded-lg text-xs flex justify-between items-center border border-slate-600">
-                    <div>
-                        <span class="font-bold text-neon-cyan">${p.nickname}</span>
-                        ${p.realName ? `<span class="text-[10px] text-slate-400 ml-1">(${p.realName})</span>` : ''}
-                    </div>
-                    <div class="flex gap-2">
-                        <i onclick="loadPlayerForEdit(${idx})" class="fas fa-pencil-alt cursor-pointer text-slate-400 hover:text-white"></i>
-                        <i onclick="removePlayer(${idx})" class="fas fa-trash cursor-pointer text-slate-400 hover:text-red-400"></i>
-                    </div>
+                    <div><span class="font-bold text-neon-cyan">${p.nickname}</span>${p.realName ? `<span class="text-[10px] text-slate-400 ml-1">(${p.realName})</span>` : ''}</div>
+                    <div class="flex gap-2"><i onclick="loadPlayerForEdit(${idx})" class="fas fa-pencil-alt cursor-pointer text-slate-400 hover:text-white"></i><i onclick="removePlayer(${idx})" class="fas fa-trash cursor-pointer text-slate-400 hover:text-red-400"></i></div>
                 </div>`).join('');
-            
             document.getElementById('listGames').innerHTML=config.games.map(g=>`<div class="flex justify-between bg-slate-800 p-2 rounded text-xs border border-slate-700"><span>${g.name} <span class="text-[9px] text-slate-500 uppercase">${g.type==='score'?'Puntos':'Directo'}</span></span><i onclick="removeGame('${g.name}')" class="fas fa-trash cursor-pointer text-slate-500 hover:text-red-400"></i></div>`).join('');
             localStorage.setItem('bg_config',JSON.stringify(config));
         }
-
         function savePlayer() {
-            const nick = document.getElementById('playerNick').value.trim();
-            const real = document.getElementById('playerReal').value.trim();
-            const index = parseInt(document.getElementById('editPlayerIndex').value);
-
+            const nick = document.getElementById('playerNick').value.trim(); const real = document.getElementById('playerReal').value.trim(); const index = parseInt(document.getElementById('editPlayerIndex').value);
             if(!nick) return Swal.fire('Falta Nickname','','warning');
-
-            // Verificar duplicados (solo si es nuevo o cambio de nombre)
-            const exists = config.players.some((p, i) => p.nickname === nick && i !== index);
-            if(exists) return Swal.fire('Ya existe','Ese nickname está ocupado','error');
-
-            if(index === -1) {
-                // Nuevo
-                config.players.push({ nickname: nick, realName: real });
-            } else {
-                // Editar
-                config.players[index].nickname = nick;
-                config.players[index].realName = real;
-            }
-
-            cancelEditPlayer(); // Limpiar y resetear form
-            renderSettings();
+            const exists = config.players.some((p, i) => p.nickname === nick && i !== index); if(exists) return Swal.fire('Ya existe','','error');
+            if(index === -1) config.players.push({ nickname: nick, realName: real });
+            else { config.players[index].nickname = nick; config.players[index].realName = real; }
+            cancelEditPlayer(); renderSettings();
         }
-
         function loadPlayerForEdit(index) {
-            const p = config.players[index];
-            document.getElementById('playerNick').value = p.nickname;
-            document.getElementById('playerReal').value = p.realName || '';
-            document.getElementById('editPlayerIndex').value = index;
-            document.getElementById('btnSavePlayer').innerText = 'ACTUALIZAR';
-            document.getElementById('btnSavePlayer').className = 'w-full bg-neon-violet text-white py-2 rounded-lg text-xs font-bold transition-colors';
-            document.getElementById('btnCancelEdit').classList.remove('hidden');
+            const p = config.players[index]; document.getElementById('playerNick').value = p.nickname; document.getElementById('playerReal').value = p.realName || '';
+            document.getElementById('editPlayerIndex').value = index; document.getElementById('btnSavePlayer').innerText = 'ACTUALIZAR'; document.getElementById('btnSavePlayer').className = 'w-full bg-neon-violet text-white py-2 rounded-lg text-xs font-bold transition-colors'; document.getElementById('btnCancelEdit').classList.remove('hidden');
         }
-
         function cancelEditPlayer() {
-            document.getElementById('playerNick').value = '';
-            document.getElementById('playerReal').value = '';
-            document.getElementById('editPlayerIndex').value = -1;
-            document.getElementById('btnSavePlayer').innerText = 'AGREGAR JUGADOR';
-            document.getElementById('btnSavePlayer').className = 'w-full bg-slate-700 hover:bg-neon-cyan/50 hover:text-white text-slate-300 py-2 rounded-lg text-xs font-bold transition-colors';
-            document.getElementById('btnCancelEdit').classList.add('hidden');
+            document.getElementById('playerNick').value = ''; document.getElementById('playerReal').value = ''; document.getElementById('editPlayerIndex').value = -1;
+            document.getElementById('btnSavePlayer').innerText = 'AGREGAR JUGADOR'; document.getElementById('btnSavePlayer').className = 'w-full bg-slate-700 hover:bg-neon-cyan/50 hover:text-white text-slate-300 py-2 rounded-lg text-xs font-bold transition-colors'; document.getElementById('btnCancelEdit').classList.add('hidden');
         }
-
-        function removePlayer(index) { 
-            if(confirm('¿Borrar jugador?')) {
-                config.players.splice(index, 1); 
-                renderSettings(); 
-            }
-        }
-
+        function removePlayer(index) { if(confirm('¿Borrar?')) { config.players.splice(index, 1); renderSettings(); } }
         async function addGame() {
             const n=document.getElementById('newGameName').value.trim(); if(!n)return;
             const {value:isS} = await Swal.fire({title:'Tipo',showCancelButton:true,confirmButtonText:'Puntos',cancelButtonText:'Directo',background:'#1e293b',color:'#fff'});
