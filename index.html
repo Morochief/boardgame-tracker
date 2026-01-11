@@ -87,8 +87,6 @@
         .current-user-badge { position: fixed; top: 70px; right: 10px; z-index: 45; display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; }
         .current-user-badge:hover { background: rgba(168, 85, 247, 0.2); }
         @media (min-width: 768px) { .current-user-badge { top: 20px; right: 20px; } }
-        
-        /* Observer specific */
         .observer-hidden { display: none !important; }
     </style>
 </head>
@@ -159,12 +157,7 @@
             <input type="hidden" id="editProfileId" value="">
             <div class="text-center mb-6"><div id="previewAvatar" class="w-20 h-20 rounded-xl mx-auto mb-2 flex items-center justify-center text-4xl avatar-violet">😀</div></div>
             <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Nombre</label><input type="text" id="profileNameInput" placeholder="Nombre" maxlength="15" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"></div>
-            
-            <div class="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl mb-4 border border-slate-700">
-                <input type="checkbox" id="profileIsObserver" class="w-5 h-5 accent-yellow-500 rounded cursor-pointer">
-                <label for="profileIsObserver" class="text-sm text-slate-300 cursor-pointer select-none flex-1">Modo Observador (Solo Lectura) 👁️</label>
-            </div>
-
+            <div class="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl mb-4 border border-slate-700"><input type="checkbox" id="profileIsObserver" class="w-5 h-5 accent-yellow-500 rounded cursor-pointer"><label for="profileIsObserver" class="text-sm text-slate-300 cursor-pointer select-none flex-1">Modo Observador (Solo Lectura) 👁️</label></div>
             <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Avatar</label><div class="avatar-selector" id="emojiSelector"></div></div>
             <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Color</label><div class="color-selector" id="colorSelector"></div></div>
             <div class="flex gap-3"><button onclick="closeEditProfileModal()" class="flex-1 py-3 border border-slate-600 rounded-xl text-slate-300 hover:bg-slate-800 transition-colors">Cancelar</button><button onclick="saveProfile()" class="flex-1 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl font-bold text-black hover:opacity-90 transition-opacity">Guardar</button></div>
@@ -186,6 +179,7 @@
             <div class="flex items-center gap-3 mb-10"><div class="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-violet to-neon-cyan flex items-center justify-center"><i class="fas fa-dice-d20 text-white"></i></div><div><h1 class="font-gaming font-bold text-lg">BG TRACKER</h1><p id="desktopStatus" class="text-[10px] text-red-400">● Desconectado</p></div></div>
             <div class="flex flex-col gap-2">
                 <button onclick="nav('dashboard')" class="nav-btn active flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="dashboard"><i class="fas fa-chart-pie w-5"></i> Dashboard</button>
+                <button onclick="nav('analytics')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="analytics"><i class="fas fa-chart-line w-5"></i> Analytics</button>
                 <button onclick="nav('justice')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="justice"><i class="fas fa-balance-scale w-5"></i> Justicia</button>
                 <button id="navRegister" onclick="nav('register')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="register"><i class="fas fa-plus-circle w-5"></i> Nueva Partida</button>
                 <button onclick="nav('history')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="history"><i class="fas fa-history w-5"></i> Historial</button>
@@ -203,6 +197,19 @@
                     <div class="game-card p-5 rounded-2xl"><div class="flex items-center justify-between mb-3"><p class="text-slate-300 text-xs uppercase font-bold flex items-center gap-2"><i class="fas fa-fire text-neon-pink"></i> Juego Favorito</p><button onclick="toggleRanking('games')" class="text-xs text-neon-pink hover:underline"><span id="toggleGamesText">Ver Top 5</span> <i class="fas fa-chevron-down text-[10px]"></i></button></div><div id="gameMain" class="flex items-center gap-4"><div class="w-14 h-14 rounded-full bg-gradient-to-br from-neon-pink to-neon-violet flex items-center justify-center text-2xl">🎲</div><div><p id="kpiGameName" class="font-gaming text-2xl text-neon-pink">-</p><p id="kpiGameCount" class="text-sm text-slate-400">0 partidas</p></div></div><div id="gamesRanking" class="expand-content mt-4"><div class="border-t border-slate-700 pt-3 space-y-2" id="gamesRankingList"></div></div></div>
                 </div>
                 <div class="grid md:grid-cols-2 gap-6"><div class="glass p-5 rounded-2xl"><h3 class="text-sm font-bold mb-4 text-slate-300">Victorias</h3><div class="h-48"><canvas id="chartWins"></canvas></div></div><div class="glass p-5 rounded-2xl"><h3 class="text-sm font-bold mb-4 text-slate-300">Juegos</h3><div class="h-48"><canvas id="chartGames"></canvas></div></div></div>
+            </section>
+
+            <section id="analytics" class="section">
+                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2 text-neon-cyan"><i class="fas fa-chart-line"></i> Analytics</h2>
+                <div class="glass p-5 rounded-2xl mb-6">
+                    <h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2"><i class="fas fa-percentage text-neon-cyan"></i> Tasa de Efectividad (Win Rate)</h3>
+                    <p class="text-xs text-slate-500 mb-4">Porcentaje de victorias sobre partidas jugadas (Mínimo 3 partidas).</p>
+                    <div class="h-64"><canvas id="chartWinRate"></canvas></div>
+                </div>
+                <div class="glass p-5 rounded-2xl">
+                    <h3 class="font-bold mb-4 text-slate-300">Detalle de Rendimiento</h3>
+                    <div id="analyticsTable" class="space-y-2"></div>
+                </div>
             </section>
 
             <section id="justice" class="section">
@@ -259,10 +266,10 @@
 
         <nav class="md:hidden fixed bottom-0 w-full glass border-t border-slate-800 p-2 z-50 flex justify-around">
             <button onclick="nav('dashboard')" class="nav-btn active flex flex-col items-center p-2 rounded-lg text-xs" data-target="dashboard"><i class="fas fa-chart-pie text-lg mb-1"></i></button>
+            <button onclick="nav('analytics')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="analytics"><i class="fas fa-chart-line text-lg mb-1"></i></button>
+            <button onclick="nav('register')" id="mobRegister" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="register"><i class="fas fa-plus-circle text-2xl mb-1 text-neon-cyan"></i></button>
             <button onclick="nav('justice')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="justice"><i class="fas fa-balance-scale text-lg mb-1"></i></button>
-            <button id="mobRegister" onclick="nav('register')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="register"><i class="fas fa-plus-circle text-2xl mb-1 text-neon-cyan"></i></button>
-            <button onclick="nav('history')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="history"><i class="fas fa-history text-lg mb-1"></i></button>
-            <button id="mobSettings" onclick="nav('settings')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="settings"><i class="fas fa-cog text-lg mb-1"></i></button>
+            <button onclick="nav('settings')" id="mobSettings" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="settings"><i class="fas fa-cog text-lg mb-1"></i></button>
         </nav>
     </div>
 
@@ -395,12 +402,84 @@
             document.querySelectorAll('.nav-btn').forEach(e => { e.classList.remove('active'); if (e.dataset.target === id) e.classList.add('active'); });
             if (id === 'register' && !document.getElementById('editMatchId').value) prepareRegisterForm();
             if (id === 'justice') renderJusticeModule();
+            if (id === 'analytics') renderAnalyticsModule();
         }
         function toggleRanking(t) { const el = document.getElementById(t + 'Ranking'), txt = document.getElementById('toggle' + (t === 'players' ? 'Players' : 'Games') + 'Text'); if (el.classList.contains('expanded')) { el.classList.remove('expanded'); txt.innerText = 'Ver Top 5'; } else { el.classList.add('expanded'); txt.innerText = 'Ocultar'; } }
         function renderRankings(wins, games) {
             const sp = Object.entries(wins).sort((a, b) => b[1] - a[1]); document.getElementById('playersRankingList').innerHTML = sp.length ? sp.slice(0, 5).map((p, i) => `<div class="flex justify-between py-2 border-b border-slate-700/50 text-sm"><span>#${i + 1} <b class="text-neon-cyan">${p[0]}</b></span><span>${p[1]} wins</span></div>`).join('') : '<p class="text-xs opacity-50">Sin datos</p>'; if (sp[0]) { document.getElementById('kpiMVPName').innerText = sp[0][0]; document.getElementById('kpiMVPWins').innerText = sp[0][1] + ' wins'; }
             const sg = Object.entries(games).sort((a, b) => b[1] - a[1]); document.getElementById('gamesRankingList').innerHTML = sg.length ? sg.slice(0, 5).map((g, i) => `<div class="flex justify-between py-2 border-b border-slate-700/50 text-sm"><span>#${i + 1} <b class="text-neon-pink">${g[0]}</b></span><span>${g[1]} partidas</span></div>`).join('') : '<p class="text-xs opacity-50">Sin datos</p>'; if (sg[0]) { document.getElementById('kpiGameName').innerText = sg[0][0]; document.getElementById('kpiGameCount').innerText = sg[0][1] + ' partidas'; }
         }
+        
+        // --- ANALYTICS ---
+        let chartWinRate;
+        function renderAnalyticsModule() {
+            // Calcular Stats
+            const stats = {};
+            matches.forEach(m => {
+                m.players.forEach(p => {
+                    if(!stats[p]) stats[p] = { played: 0, wins: 0 };
+                    stats[p].played++;
+                    if(p === m.winner) stats[p].wins++;
+                });
+            });
+
+            // Filtrar mínimo 3 partidas y ordenar por %
+            const ranking = Object.keys(stats)
+                .map(p => ({
+                    name: p,
+                    played: stats[p].played,
+                    wins: stats[p].wins,
+                    rate: ((stats[p].wins / stats[p].played) * 100).toFixed(1)
+                }))
+                .filter(p => p.played >= 3)
+                .sort((a, b) => b.rate - a.rate);
+
+            // Render Gráfico
+            const ctx = document.getElementById('chartWinRate');
+            if (chartWinRate) chartWinRate.destroy();
+            
+            const colors = ranking.map(r => r.rate >= 50 ? '#10b981' : (r.rate >= 30 ? '#f59e0b' : '#ef4444'));
+
+            chartWinRate = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ranking.map(r => r.name),
+                    datasets: [{
+                        label: 'Win Rate %',
+                        data: ranking.map(r => r.rate),
+                        backgroundColor: colors,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { max: 100, ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#fff' } } }
+                }
+            });
+
+            // Render Tabla
+            const table = document.getElementById('analyticsTable');
+            if (ranking.length === 0) {
+                table.innerHTML = '<p class="text-center text-slate-500 py-4">Se necesitan mínimo 3 partidas por jugador para calcular estadísticas.</p>';
+            } else {
+                table.innerHTML = ranking.map((r, i) => `
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                        <div class="flex items-center gap-3">
+                            <span class="text-slate-500 text-xs font-mono">#${i+1}</span>
+                            <span class="font-bold text-white">${r.name}</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold ${r.rate >= 50 ? 'text-emerald-400' : (r.rate>=30?'text-amber-400':'text-red-400')}">${r.rate}%</div>
+                            <div class="text-[10px] text-slate-400">${r.wins} wins / ${r.played} games</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
         function renderJusticeModule() {
             const dMap = {}; matches.forEach(m => { const d = m.played_date || m.created_at.split('T')[0]; if (!dMap[d]) dMap[d] = new Set(); m.players.forEach(p => dMap[d].add(p)); });
             const uDates = Object.keys(dMap).sort().reverse(); const wall = document.getElementById('wallOfShameCard'); const alert = document.getElementById('dashboardAlert');
