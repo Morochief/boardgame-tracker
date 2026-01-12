@@ -540,6 +540,81 @@
             background: #334155;
             color: #94a3b8;
         }
+
+        /* Achievement Cards */
+        .achievement-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.5));
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-card.unlocked {
+            border-color: #fbbf24;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+        }
+
+        .achievement-card.locked {
+            opacity: 0.5;
+            filter: grayscale(0.5);
+        }
+
+        .achievement-icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        /* Tournament Bracket */
+        .bracket-round {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            min-width: 180px;
+        }
+
+        .bracket-match {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .bracket-player {
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .bracket-player:first-child {
+            border-bottom: 1px solid #334155;
+        }
+
+        .bracket-player:hover {
+            background: rgba(168, 85, 247, 0.2);
+        }
+
+        .bracket-player.winner {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .bracket-player.loser {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .bracket-connector {
+            width: 30px;
+            border-top: 2px solid #475569;
+            border-right: 2px solid #475569;
+        }
     </style>
 </head>
 
@@ -748,6 +823,12 @@
                 <button id="navRegister" onclick="nav('register')"
                     class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
                     data-target="register"><i class="fas fa-plus-circle w-5"></i> Nueva Partida</button>
+                <button onclick="nav('tournament')"
+                    class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
+                    data-target="tournament"><i class="fas fa-trophy w-5"></i> Torneo</button>
+                <button onclick="nav('achievements')"
+                    class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
+                    data-target="achievements"><i class="fas fa-medal w-5"></i> Logros</button>
                 <button onclick="nav('history')"
                     class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
                     data-target="history"><i class="fas fa-history w-5"></i> Historial</button>
@@ -991,6 +1072,62 @@
                 </div>
             </section>
 
+            <!-- ACHIEVEMENTS SECTION -->
+            <section id="achievements" class="section">
+                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-yellow-400">🏅</span>
+                    Logros</h2>
+                <p class="text-slate-400 text-sm mb-6">Desbloquea logros jugando partidas y ganando.</p>
+                <div id="achievementsList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="text-center py-10 text-slate-500">Cargando logros...</div>
+                </div>
+            </section>
+
+            <!-- TOURNAMENT SECTION -->
+            <section id="tournament" class="section">
+                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-yellow-500">🏆</span>
+                    Modo Torneo</h2>
+
+                <div id="tournamentSetup" class="glass p-6 rounded-2xl max-w-xl mx-auto mb-6">
+                    <h3 class="font-bold text-white mb-4 flex items-center gap-2"><i
+                            class="fas fa-cog text-neon-cyan"></i> Configurar Torneo</h3>
+
+                    <div class="mb-4">
+                        <label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Nombre del Torneo</label>
+                        <input type="text" id="tournamentName" placeholder="Ej: Copa Navidad 2026"
+                            class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Juego</label>
+                        <select id="tournamentGame"
+                            class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white">
+                            <option value="">Selecciona juego...</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Participantes (selecciona 4
+                            u 8)</label>
+                        <div id="tournamentPlayers" class="grid grid-cols-3 gap-2"></div>
+                    </div>
+
+                    <button onclick="createTournament()"
+                        class="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl font-bold text-black hover:opacity-90 transition-opacity">
+                        <i class="fas fa-trophy mr-2"></i> CREAR BRACKET
+                    </button>
+                </div>
+
+                <div id="tournamentBracket" class="hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 id="activeTournamentName" class="font-gaming text-xl text-yellow-400"></h3>
+                        <button onclick="cancelTournament()" class="text-red-400 text-sm hover:underline">
+                            <i class="fas fa-times"></i> Cancelar Torneo
+                        </button>
+                    </div>
+                    <div id="bracketContainer" class="overflow-x-auto pb-4"></div>
+                </div>
+            </section>
+
             <section id="settings" class="section">
                 <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-slate-400">⚙️</span>
                     Ajustes</h2>
@@ -1042,13 +1179,13 @@
         <nav class="md:hidden fixed bottom-0 w-full glass border-t border-slate-800 p-2 z-50 flex justify-around">
             <button onclick="nav('dashboard')" class="nav-btn active flex flex-col items-center p-2 rounded-lg text-xs"
                 data-target="dashboard"><i class="fas fa-chart-pie text-lg mb-1"></i></button>
-            <button onclick="nav('analytics')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs"
-                data-target="analytics"><i class="fas fa-chart-line text-lg mb-1"></i></button>
+            <button onclick="nav('tournament')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs"
+                data-target="tournament"><i class="fas fa-trophy text-lg mb-1"></i></button>
             <button onclick="nav('register')" id="mobRegister"
                 class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="register"><i
                     class="fas fa-plus-circle text-2xl mb-1 text-neon-cyan"></i></button>
-            <button onclick="nav('justice')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs"
-                data-target="justice"><i class="fas fa-balance-scale text-lg mb-1"></i></button>
+            <button onclick="nav('achievements')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs"
+                data-target="achievements"><i class="fas fa-medal text-lg mb-1"></i></button>
             <button onclick="nav('settings')" id="mobSettings"
                 class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="settings"><i
                     class="fas fa-cog text-lg mb-1"></i></button>
@@ -1561,6 +1698,245 @@
         function cancelEditGame() { document.getElementById('newGameName').value = ''; setGameType('direct'); document.getElementById('editGameIndex').value = -1; document.getElementById('btnSaveGame').innerText = 'Agregar'; document.getElementById('btnCancelEditGame').classList.add('hidden'); }
         function removeGame(i) { config.games.splice(i, 1); saveConfigToCloud(); }
         let chartWins, chartGames; function initCharts() { Chart.defaults.color = '#64748b'; Chart.defaults.borderColor = '#334155'; chartWins = new Chart(document.getElementById('chartWins'), { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#a855f7', '#22d3ee', '#ec4899', '#f59e0b', '#10b981'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } } } }); chartGames = new Chart(document.getElementById('chartGames'), { type: 'bar', data: { labels: [], datasets: [{ label: 'Partidas', data: [], backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } } }); } function updateCharts(w, g) { chartWins.data.labels = Object.keys(w); chartWins.data.datasets[0].data = Object.values(w); chartWins.update(); chartGames.data.labels = Object.keys(g); chartGames.data.datasets[0].data = Object.values(g); chartGames.update(); }
+
+        // ==================== ACHIEVEMENTS SYSTEM ====================
+        const ACHIEVEMENTS = [
+            { id: 'first_win', name: 'Primera Victoria', icon: '🥇', desc: 'Gana tu primera partida', check: (s) => s.wins >= 1 },
+            { id: 'win_5', name: 'Pentacampeón', icon: '🏆', desc: 'Gana 5 partidas', check: (s) => s.wins >= 5 },
+            { id: 'win_10', name: 'Imparable', icon: '🔥', desc: 'Gana 10 partidas', check: (s) => s.wins >= 10 },
+            { id: 'win_25', name: 'Leyenda', icon: '👑', desc: 'Gana 25 partidas', check: (s) => s.wins >= 25 },
+            { id: 'win_50', name: 'Dios del Tablero', icon: '⚡', desc: 'Gana 50 partidas', check: (s) => s.wins >= 50 },
+            { id: 'played_10', name: 'Veterano', icon: '🎖️', desc: 'Juega 10 partidas', check: (s) => s.played >= 10 },
+            { id: 'played_50', name: 'Adicto', icon: '🎲', desc: 'Juega 50 partidas', check: (s) => s.played >= 50 },
+            { id: 'played_100', name: 'Sin Vida Social', icon: '💀', desc: 'Juega 100 partidas', check: (s) => s.played >= 100 },
+            { id: 'streak_3', name: 'En Racha', icon: '🔥', desc: 'Gana 3 partidas seguidas', check: (s) => s.bestStreak >= 3 },
+            { id: 'streak_5', name: 'Invencible', icon: '💪', desc: 'Gana 5 partidas seguidas', check: (s) => s.bestStreak >= 5 },
+            { id: 'winrate_60', name: 'Efectivo', icon: '🎯', desc: 'Mantén un 60% de victorias (min 10 partidas)', check: (s) => s.played >= 10 && (s.wins / s.played) >= 0.6 },
+            { id: 'game_master', name: 'Versatil', icon: '🃏', desc: 'Gana en 5 juegos diferentes', check: (s) => s.gamesWon >= 5 },
+        ];
+
+        function renderAchievements() {
+            const container = document.getElementById('achievementsList');
+
+            // Calculate stats per player
+            const playerStats = {};
+            const sortedMatches = [...matches].sort((a, b) => new Date(a.played_date || a.created_at) - new Date(b.played_date || b.created_at));
+
+            sortedMatches.forEach(m => {
+                m.players.forEach(p => {
+                    if (!playerStats[p]) playerStats[p] = { played: 0, wins: 0, currentStreak: 0, bestStreak: 0, gamesWon: new Set() };
+                    playerStats[p].played++;
+                    if (m.winner === p) {
+                        playerStats[p].wins++;
+                        playerStats[p].currentStreak++;
+                        if (playerStats[p].currentStreak > playerStats[p].bestStreak) playerStats[p].bestStreak = playerStats[p].currentStreak;
+                        playerStats[p].gamesWon.add(m.game);
+                    } else {
+                        playerStats[p].currentStreak = 0;
+                    }
+                });
+            });
+
+            // Convert Set to count
+            Object.keys(playerStats).forEach(p => { playerStats[p].gamesWon = playerStats[p].gamesWon.size; });
+
+            // For current user or show global
+            const targetPlayer = currentUser?.name;
+            const stats = playerStats[targetPlayer] || { played: 0, wins: 0, bestStreak: 0, gamesWon: 0 };
+
+            container.innerHTML = ACHIEVEMENTS.map(ach => {
+                const unlocked = ach.check(stats);
+                return `
+                    <div class="achievement-card ${unlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-icon">${ach.icon}</div>
+                        <h4 class="font-bold text-white mb-1">${ach.name}</h4>
+                        <p class="text-xs text-slate-400">${ach.desc}</p>
+                        ${unlocked ? '<div class="mt-2 text-xs text-yellow-400 font-bold">✓ Desbloqueado</div>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== TOURNAMENT SYSTEM ====================
+        let activeTournament = null;
+        let tournamentPlayers = [];
+
+        function initTournamentUI() {
+            const gameSelect = document.getElementById('tournamentGame');
+            if (gameSelect) {
+                gameSelect.innerHTML = '<option value="">Selecciona juego...</option>' + config.games.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
+            }
+            const playersGrid = document.getElementById('tournamentPlayers');
+            if (playersGrid) {
+                playersGrid.innerHTML = config.players.map(p => `
+                    <div onclick="toggleTournamentPlayer('${p.nickname}', this)" 
+                         class="cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded-lg text-center text-xs text-slate-300 select-none">
+                        ${p.nickname}
+                    </div>
+                `).join('');
+            }
+            tournamentPlayers = [];
+        }
+
+        function toggleTournamentPlayer(name, el) {
+            if (tournamentPlayers.includes(name)) {
+                tournamentPlayers = tournamentPlayers.filter(p => p !== name);
+                el.className = "cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded-lg text-center text-xs text-slate-300 select-none";
+            } else {
+                tournamentPlayers.push(name);
+                el.className = "cursor-pointer bg-yellow-500 text-black p-2 rounded-lg text-center text-xs font-bold";
+            }
+        }
+
+        function createTournament() {
+            const name = document.getElementById('tournamentName').value.trim() || 'Torneo';
+            const game = document.getElementById('tournamentGame').value;
+
+            if (!game) return Swal.fire('Error', 'Selecciona un juego', 'warning');
+            if (tournamentPlayers.length !== 4 && tournamentPlayers.length !== 8) {
+                return Swal.fire('Error', 'Selecciona 4 u 8 jugadores', 'warning');
+            }
+
+            // Shuffle players
+            const shuffled = [...tournamentPlayers].sort(() => Math.random() - 0.5);
+
+            // Create bracket structure
+            activeTournament = {
+                name,
+                game,
+                players: shuffled,
+                rounds: [],
+                currentRound: 0
+            };
+
+            // Generate first round matches
+            const firstRound = [];
+            for (let i = 0; i < shuffled.length; i += 2) {
+                firstRound.push({ player1: shuffled[i], player2: shuffled[i + 1], winner: null });
+            }
+            activeTournament.rounds.push(firstRound);
+
+            renderBracket();
+            document.getElementById('tournamentSetup').classList.add('hidden');
+            document.getElementById('tournamentBracket').classList.remove('hidden');
+            document.getElementById('activeTournamentName').innerText = `🏆 ${name}`;
+        }
+
+        function renderBracket() {
+            if (!activeTournament) return;
+
+            const container = document.getElementById('bracketContainer');
+            let html = '<div class="flex gap-4">';
+
+            activeTournament.rounds.forEach((round, roundIdx) => {
+                const roundName = roundIdx === activeTournament.rounds.length - 1 && round.length === 1 ? 'Final' :
+                    round.length === 2 ? 'Semifinal' : `Ronda ${roundIdx + 1}`;
+
+                html += `<div class="bracket-round">
+                    <h4 class="text-center text-xs text-slate-400 mb-2 font-bold">${roundName}</h4>`;
+
+                round.forEach((match, matchIdx) => {
+                    html += `<div class="bracket-match">
+                        <div class="bracket-player ${match.winner === match.player1 ? 'winner' : (match.winner ? 'loser' : '')}"
+                             onclick="setMatchWinner(${roundIdx}, ${matchIdx}, '${match.player1}')">
+                            <span>${match.player1 || 'TBD'}</span>
+                            ${match.winner === match.player1 ? '<span>👑</span>' : ''}
+                        </div>
+                        <div class="bracket-player ${match.winner === match.player2 ? 'winner' : (match.winner ? 'loser' : '')}"
+                             onclick="setMatchWinner(${roundIdx}, ${matchIdx}, '${match.player2}')">
+                            <span>${match.player2 || 'TBD'}</span>
+                            ${match.winner === match.player2 ? '<span>👑</span>' : ''}
+                        </div>
+                    </div>`;
+                });
+
+                html += '</div>';
+            });
+
+            // Show champion if final is decided
+            const lastRound = activeTournament.rounds[activeTournament.rounds.length - 1];
+            if (lastRound && lastRound.length === 1 && lastRound[0].winner) {
+                html += `<div class="bracket-round flex items-center justify-center">
+                    <div class="text-center p-6">
+                        <div class="text-4xl mb-2">🏆</div>
+                        <div class="text-yellow-400 font-gaming text-xl">${lastRound[0].winner}</div>
+                        <div class="text-xs text-slate-400">Campeón</div>
+                    </div>
+                </div>`;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function setMatchWinner(roundIdx, matchIdx, winner) {
+            if (!activeTournament) return;
+
+            const round = activeTournament.rounds[roundIdx];
+            const match = round[matchIdx];
+
+            // Can only set winner for current round
+            if (roundIdx !== activeTournament.currentRound) return;
+
+            match.winner = winner;
+
+            // Check if round is complete
+            const roundComplete = round.every(m => m.winner);
+
+            if (roundComplete && round.length > 1) {
+                // Create next round
+                const nextRound = [];
+                for (let i = 0; i < round.length; i += 2) {
+                    nextRound.push({
+                        player1: round[i].winner,
+                        player2: round[i + 1]?.winner || round[i].winner,
+                        winner: null
+                    });
+                }
+                activeTournament.rounds.push(nextRound);
+                activeTournament.currentRound++;
+            }
+
+            renderBracket();
+
+            // Check for champion
+            const lastRound = activeTournament.rounds[activeTournament.rounds.length - 1];
+            if (lastRound && lastRound.length === 1 && lastRound[0].winner) {
+                Swal.fire({
+                    title: '🏆 ¡Campeón!',
+                    html: `<strong>${lastRound[0].winner}</strong> ganó el torneo<br><em>${activeTournament.name}</em>`,
+                    icon: 'success',
+                    background: '#1e293b',
+                    color: '#fff'
+                });
+            }
+        }
+
+        function cancelTournament() {
+            Swal.fire({
+                title: '¿Cancelar torneo?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                background: '#1e293b',
+                color: '#fff'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    activeTournament = null;
+                    document.getElementById('tournamentSetup').classList.remove('hidden');
+                    document.getElementById('tournamentBracket').classList.add('hidden');
+                    initTournamentUI();
+                }
+            });
+        }
+
+        // Update nav function to init tournament when visited
+        const originalNav = nav;
+        nav = function (target) {
+            originalNav(target);
+            if (target === 'tournament') initTournamentUI();
+            if (target === 'achievements') renderAchievements();
+        };
     </script>
 </body>
 
