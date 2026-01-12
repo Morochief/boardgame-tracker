@@ -17,8 +17,20 @@
     <style>
         body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .glass-danger { background: rgba(69, 10, 10, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(239, 68, 68, 0.3); }
-        .glass-success { background: rgba(6, 78, 59, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(16, 185, 129, 0.3); }
+        
+        /* ESTILOS RESTAURADOS PARA WALL OF SHAME */
+        .glass-danger { 
+            background: rgba(69, 10, 10, 0.6); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(239, 68, 68, 0.5); 
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+        .glass-success { 
+            background: rgba(6, 78, 59, 0.6); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(16, 185, 129, 0.3); 
+        }
+
         .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.2; z-index: 0; animation: float 10s ease-in-out infinite; }
         .section { display: none; opacity: 0; transition: opacity 0.3s ease; }
         .section.active { display: block; opacity: 1; }
@@ -489,7 +501,17 @@
                 if (off.length > 0) { wall.className = 'glass-danger p-6 rounded-2xl animate-pulse'; wall.innerHTML = `<h3 class="text-red-500 font-bold mb-2">💀 WALL OF SHAME</h3><div class="flex flex-wrap gap-2">${off.map(o => `<span class="bg-red-900 text-red-200 px-2 rounded">${o}</span>`).join('')}</div>`; alert.classList.remove('hidden'); }
                 else { wall.className = 'glass-success p-6 rounded-2xl'; wall.innerHTML = '<h3 class="text-emerald-400 font-bold">✨ Zona Segura</h3><p class="text-sm">Nadie tiene 3 faltas seguidas.</p>'; alert.classList.add('hidden'); }
             }
-            document.getElementById('absenceBoard').innerHTML = uDates.map(d => `<div class="flex justify-between p-2 border-b border-slate-700 text-xs"><span>${new Date(d).toLocaleDateString()}</span><span class="text-slate-400">${config.players.filter(p => !dMap[d].has(p.nickname)).map(p => p.nickname).join(', ') || 'Todos presentes'}</span></div>`).join('');
+            document.getElementById('absenceBoard').innerHTML = uDates.map(d => {
+                const absentList = config.players.filter(p => !dMap[d].has(p.nickname)).map(p => p.nickname);
+                const absentBadges = absentList.length > 0 
+                    ? `<div class="flex flex-wrap justify-end gap-1">${absentList.map(a => `<span class="text-[10px] bg-red-900/40 text-red-300 px-2 py-0.5 rounded border border-red-900">${a}</span>`).join('')}</div>`
+                    : `<span class="text-xs text-emerald-400 font-bold">Asistencia Perfecta</span>`;
+                
+                return `<div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                    <div class="flex items-center gap-3 min-w-[80px]"><div class="bg-slate-700 px-2 py-1 rounded text-xs font-bold text-slate-300 text-center">${new Date(d).toLocaleDateString()}</div></div>
+                    <div class="flex-1 text-right">${absentBadges}</div>
+                </div>`;
+            }).join('');
         }
         function updateUI() {
             document.getElementById('kpiTotal').innerText = matches.length;
