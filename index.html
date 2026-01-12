@@ -1015,6 +1015,7 @@
 
             if (!currentUser) {
                 console.error('CRITICAL: currentUser is null in updateCurrentUserBadge');
+                console.trace('Who called me with null user?');
                 av.innerHTML = '❌';
                 av.style.backgroundColor = 'red';
                 document.getElementById('currentUserName').innerText = 'Error';
