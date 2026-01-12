@@ -28,7 +28,7 @@
         body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; overflow-x: hidden; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
         
-        /* ESTILOS DE JUSTICIA RESTAURADOS */
+        /* ESTILOS DE JUSTICIA (NEÓN ROJO) */
         .glass-danger { 
             background: rgba(69, 10, 10, 0.8); 
             backdrop-filter: blur(12px); 
@@ -44,6 +44,8 @@
             border-radius: 9999px;
             font-weight: bold;
             box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+            display: inline-block;
+            margin: 2px;
         }
 
         .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.2; z-index: 0; animation: float 10s ease-in-out infinite; }
@@ -117,7 +119,9 @@
                 <h1 class="font-gaming text-4xl bg-gradient-to-r from-neon-cyan to-neon-violet bg-clip-text text-transparent">BG TRACKER</h1>
                 <p class="text-slate-400">Selecciona tu perfil</p>
             </div>
-            <div id="profilesGrid" class="flex flex-wrap justify-center gap-6"></div>
+            <div id="profilesGrid" class="flex flex-wrap justify-center gap-6">
+                <p class="text-slate-500 animate-pulse">Cargando perfiles...</p>
+            </div>
             <button onclick="requestAdminAccess()" class="mt-12 text-xs text-yellow-500 border border-yellow-500/30 px-4 py-2 rounded-full hover:bg-yellow-500/10">
                 <i class="fas fa-cog"></i> Administrar
             </button>
@@ -238,7 +242,10 @@
             <section id="justice" class="section">
                 <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2 text-neon-red"><span class="text-3xl">⚖️</span> Sala de Justicia</h2>
                 <div id="wallOfShameCard" class="mb-8 p-6 rounded-2xl transition-all duration-500"></div>
-                <div class="glass p-6 rounded-2xl"><h3 class="font-gaming text-lg mb-4 text-slate-300 flex items-center gap-2"><i class="fas fa-calendar-times text-slate-500"></i> Bitácora de Ausencias</h3><div id="absenceBoard" class="space-y-3 max-h-[500px] overflow-y-auto pr-2"></div></div>
+                <div class="glass p-6 rounded-2xl">
+                    <h3 class="font-gaming text-lg mb-4 text-slate-300 flex items-center gap-2"><i class="fas fa-calendar-times text-slate-500"></i> Bitácora de Ausencias</h3>
+                    <div id="absenceBoard" class="space-y-3 max-h-[500px] overflow-y-auto pr-2"></div>
+                </div>
             </section>
 
             <section id="register" class="section">
@@ -263,6 +270,7 @@
 
             <section id="settings" class="section">
                 <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-slate-400">⚙️</span> Ajustes</h2>
+                <div class="mb-6 bg-blue-900/20 border border-blue-500/30 p-4 rounded-xl text-center"><p class="text-sm text-blue-200">☁️ <strong>Sincronización Total:</strong> Los cambios se verán en todos los dispositivos.</p></div>
                 <div class="grid md:grid-cols-2 gap-6">
                     <div class="glass p-5 rounded-2xl"><h3 class="font-bold mb-4 text-neon-cyan">Jugadores</h3><div class="bg-slate-800/50 p-3 rounded-xl mb-4"><div class="grid grid-cols-2 gap-2 mb-2"><input id="playerNick" placeholder="Nick" class="bg-slate-900 border border-slate-600 rounded p-2 text-sm w-full text-white"><input id="playerReal" placeholder="Nombre" class="bg-slate-900 border border-slate-600 rounded p-2 text-sm w-full text-white"></div><button onclick="savePlayer()" class="w-full bg-slate-700 text-white py-2 rounded text-xs">AGREGAR</button></div><div id="listPlayers" class="flex flex-col gap-2"></div></div>
                     <div class="glass p-5 rounded-2xl"><h3 class="font-bold mb-4 text-neon-violet">Juegos</h3><div class="bg-slate-800/50 p-3 rounded-xl mb-4"><input id="newGameName" placeholder="Juego" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm mb-2 text-white"><div class="flex gap-2 mb-2"><button id="btnTypeDirect" onclick="setGameType('direct')" class="flex-1 text-xs py-2 border rounded text-white">Directo</button><button id="btnTypeScore" onclick="setGameType('score')" class="flex-1 text-xs py-2 border rounded text-slate-400">Puntos</button></div><button onclick="saveGame()" class="w-full bg-slate-700 text-white py-2 rounded text-xs">AGREGAR</button></div><div id="listGames" class="space-y-2"></div></div>
@@ -305,7 +313,7 @@
                     try {
                         const saved = JSON.parse(savedUser);
                         const found = profiles.find(p => p.id === saved.id);
-                        if (found) { currentUser = found; await enterApp(); } 
+                        if (found) { currentUser = found; updateCurrentUserBadge(); await enterApp(); } 
                         else { sessionStorage.removeItem('currentUser'); }
                     } catch (e) { console.error(e); }
                 }
@@ -317,7 +325,7 @@
         function toast(msg) { Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: msg, showConfirmButton: false, timer: 2000, background: '#1e293b', color: '#fff' }); }
         function setOnlineStatus(online) { const i=document.getElementById('statusIndicator'), d=document.getElementById('desktopStatus'); if(online){i.classList.replace('bg-red-500','bg-green-500'); if(d){d.innerText='● Conectado';d.className='text-[10px] text-green-400';}} else {i.classList.replace('bg-green-500','bg-red-500'); if(d){d.innerText='● Desconectado';d.className='text-[10px] text-red-400';}} }
 
-        // Data & Sync
+        // Data & Sync (CORREGIDO)
         async function loadAllData() {
             const d=document.getElementById('desktopStatus'); if(d)d.innerText='● Sincronizando...';
             try {
@@ -331,7 +339,20 @@
         async function saveConfig() { await sbClient.from('app_config').upsert({key:'main_config',data:config},{onConflict:'key'}); renderSettings(); }
         async function loadAdminPin() { try{const{data}=await sbClient.from('app_config').select('data').eq('key','admin_pin').single(); if(data) adminPin=data.data.pin;}catch(e){} }
         async function saveAdminToCloud(p) { await sbClient.from('app_config').upsert({key:'admin_pin',data:{pin:p}},{onConflict:'key'}); }
-        async function loadProfiles() { try{const{data}=await sbClient.from('app_config').select('data').eq('key','user_profiles').single(); if(data) profiles=Array.isArray(data.data)?data.data:(data.data.data||[]); if(!document.getElementById('loginScreen').classList.contains('hidden')) renderProfiles();}catch(e){profiles=[];} }
+        
+        // CORRECCIÓN CRÍTICA DE CARGA DE PERFILES
+        async function loadProfiles() {
+            try {
+                const { data, error } = await sbClient.from('app_config').select('data').eq('key', 'user_profiles').single();
+                if (data && data.data) {
+                    if (Array.isArray(data.data)) profiles = data.data;
+                    else if (data.data.data && Array.isArray(data.data.data)) profiles = data.data.data;
+                    else profiles = [];
+                } else { profiles = []; }
+                if (!document.getElementById('loginScreen').classList.contains('hidden')) renderProfiles();
+            } catch (e) { console.error('Load Profiles Error', e); profiles = []; }
+        }
+
         async function saveProfiles() { await sbClient.from('app_config').upsert({key:'user_profiles',data:profiles},{onConflict:'key'}); }
         function setupRealtime() {
             if(mySubscription) sbClient.removeChannel(mySubscription);
@@ -374,7 +395,7 @@
         function closeEditProfileModal() { document.getElementById('editProfileModal').classList.add('hidden'); }
         function renderSelectors() { document.getElementById('emojiSelector').innerHTML=AVATAR_EMOJIS.map(e=>`<div onclick="selectedEmoji='${e}';renderSelectors()" class="avatar-option avatar-${selectedColor} ${e===selectedEmoji?'selected':''}">${e}</div>`).join(''); document.getElementById('colorSelector').innerHTML=AVATAR_COLORS.map(c=>`<div onclick="selectedColor='${c}';renderSelectors()" class="color-option avatar-${c} ${c===selectedColor?'selected':''}"></div>`).join(''); document.getElementById('previewAvatar').className=`w-24 h-24 mx-auto rounded-xl flex items-center justify-center text-5xl mb-2 transition-all avatar-${selectedColor}`; document.getElementById('previewAvatar').innerText=selectedEmoji; }
         async function saveProfile() { const name=document.getElementById('profileNameInput').value.trim(); if(!name)return; const i=parseInt(document.getElementById('editProfileId').value); const p={name,emoji:selectedEmoji,color:selectedColor,isObserver:document.getElementById('profileIsObserver').checked}; if(i===-1)profiles.push({id:Date.now(),pin:null,pinConfigured:false,...p}); else Object.assign(profiles[i],p); await saveProfiles(); closeEditProfileModal(); renderProfiles(); }
-        async function resetUserPin() { profiles[document.getElementById('editProfileId').value].pin=null; profiles[document.getElementById('editProfileId').value].pinConfigured=false; await saveProfiles(); closeEditProfileModal(); Swal.fire('Listo','PIN eliminado','success'); }
+        async function resetUserPin() { profiles[document.getElementById('editProfileId').value].pin=null; profiles[document.getElementById('editProfileId').value].pinConfigured=false; await saveProfiles(); closeEditProfileModal(); renderProfiles(); Swal.fire('Listo','PIN eliminado','success'); }
         async function deleteProfile() { if((await Swal.fire({title:'¿Borrar?',icon:'warning',showCancelButton:true,confirmButtonColor:'#d33',background:'#1e293b',color:'#fff'})).isConfirmed){profiles.splice(document.getElementById('editProfileId').value,1); await saveProfiles(); closeEditProfileModal(); renderProfiles();} }
 
         // PIN Logic
@@ -386,23 +407,23 @@
         // Main App Logic
         async function enterApp() {
             document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden');
+            updateCurrentUserBadge(); applyObserverRestrictions();
+            await loadAllData(); setupRealtime(); nav('dashboard');
+        }
+        function updateCurrentUserBadge() {
+            if (!currentUser) return;
+            const av = document.getElementById('currentUserAvatar'); document.getElementById('currentUserName').innerText = currentUser.name;
             const badge = document.getElementById('currentUserBadge');
             badge.classList.remove('hidden');
-            // Force avatar rendering
-            const av = document.getElementById('currentUserAvatar');
             av.className = `w-8 h-8 rounded-md flex items-center justify-center text-lg font-bold avatar-${currentUser.color}`;
             av.innerText = currentUser.emoji;
-            document.getElementById('currentUserName').innerText = currentUser.name;
-            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
-            
-            // Observer Check
-            const isObs = currentUser.isObserver;
+        }
+        function applyObserverRestrictions() {
+            const isObs = currentUser && currentUser.isObserver;
             document.getElementById('navRegister').classList.toggle('observer-hidden', isObs);
             document.getElementById('navSettings').classList.toggle('observer-hidden', isObs);
             document.getElementById('mobRegister').classList.toggle('observer-hidden', isObs);
             document.getElementById('mobSettings').classList.toggle('observer-hidden', isObs);
-
-            await loadAllData(); setupRealtime(); nav('dashboard');
         }
         function logout() { Swal.fire({title:'¿Salir?',icon:'question',showCancelButton:true,confirmButtonText:'Sí',cancelButtonText:'No',background:'#1e293b',color:'#fff'}).then(r=>{if(r.isConfirmed){currentUser=null;sessionStorage.removeItem('currentUser');location.reload();}})}
         function nav(id) {
