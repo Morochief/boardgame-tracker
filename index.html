@@ -713,7 +713,7 @@
         <div class="bg-orb w-64 h-64 bg-purple-600 top-0 left-0"></div>
         <div class="bg-orb w-96 h-96 bg-cyan-600 bottom-0 right-0" style="animation-delay: -5s"></div>
         <div class="relative z-10 w-full max-w-3xl">
-            <div class="text-center mb-12">
+            <div class="text-center mb-8">
                 <div class="inline-flex items-center gap-3 mb-4">
                     <div
                         class="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-violet to-neon-cyan flex items-center justify-center">
@@ -725,8 +725,11 @@
                     BOARDGAME TRACKER</h1>
                 <p class="text-slate-400 mt-2">¿Quién está jugando?</p>
             </div>
-            <div id="profilesGrid" class="flex flex-wrap justify-center gap-6 md:gap-8"></div>
-            <div class="text-center mt-12"><button id="btnManageProfiles" onclick="requestAdminAccess()"
+            <!-- Scrollable profiles container -->
+            <div class="max-h-[50vh] overflow-y-auto px-2 pb-4">
+                <div id="profilesGrid" class="flex flex-wrap justify-center gap-4 md:gap-6"></div>
+            </div>
+            <div class="text-center mt-6"><button id="btnManageProfiles" onclick="requestAdminAccess()"
                     class="text-yellow-400/70 hover:text-yellow-400 text-sm border border-yellow-500/30 px-6 py-2 rounded-full hover:border-yellow-500/60 transition-all hover:bg-yellow-500/10"><i
                         class="fas fa-shield-alt mr-2"></i>Administrar perfiles</button></div>
         </div>
