@@ -14,31 +14,11 @@
     <script>
         tailwind.config = { theme: { extend: { fontFamily: { 'gaming': ['Orbitron', 'sans-serif'], 'body': ['Inter', 'sans-serif'] }, colors: { 'neon-violet': '#a855f7', 'neon-cyan': '#22d3ee', 'neon-pink': '#ec4899', 'neon-red': '#ef4444', 'dark-bg': '#0f172a' } } } }
     </script>
-    
     <style>
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        
-        /* --- ESTILOS DE JUSTICIA (ROJO NEÓN) --- */
-        .glass-danger { 
-            background: rgba(69, 10, 10, 0.8); 
-            backdrop-filter: blur(12px); 
-            border: 1px solid #ef4444; 
-            box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); 
-        }
+        .glass-danger { background: rgba(69, 10, 10, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(239, 68, 68, 0.3); }
         .glass-success { background: rgba(6, 78, 59, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(16, 185, 129, 0.3); }
-        .offender-badge {
-            background-color: rgba(127, 29, 29, 0.8);
-            color: #fca5a5;
-            border: 1px solid #ef4444;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-weight: bold;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
-            display: inline-block;
-            margin: 2px;
-        }
-
         .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.2; z-index: 0; animation: float 10s ease-in-out infinite; }
         .section { display: none; opacity: 0; transition: opacity 0.3s ease; }
         .section.active { display: block; opacity: 1; }
@@ -47,30 +27,32 @@
         .swal2-popup { background: #1e293b !important; border: 1px solid #334155 !important; color: #fff !important; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         
-        /* Login & Profiles */
+        /* LOGIN & PROFILE STYLES */
         #loginScreen { position: fixed; inset: 0; z-index: 100; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
         #loginScreen.hidden { display: none; }
-        .profile-card { width: 120px; cursor: pointer; transition: all 0.3s; }
+        .profile-card { width: 120px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .profile-card:hover { transform: scale(1.1); }
-        .profile-avatar { width: 100px; height: 100px; border-radius: 12px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 3rem; position: relative; border: 3px solid transparent; }
-        .profile-avatar.has-lock::after { content: '🔒'; position: absolute; bottom: 4px; right: 4px; font-size: 1rem; background: rgba(0,0,0,0.7); border-radius: 4px; padding: 2px; }
-        .profile-avatar.is-observer::after { content: '👁️'; position: absolute; top: 4px; left: 4px; font-size: 1.2rem; background: rgba(0,0,0,0.7); border-radius: 4px; padding: 2px; }
+        .profile-card:hover .profile-avatar { border-color: #a855f7; box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
+        .profile-card:hover .profile-name { color: #fff; }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 12px; border: 3px solid transparent; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 3rem; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .profile-avatar.has-lock::after { content: '🔒'; position: absolute; bottom: 4px; right: 4px; font-size: 1rem; background: rgba(0,0,0,0.7); border-radius: 4px; padding: 2px 4px; }
+        .profile-avatar.is-observer::after { content: '👁️'; position: absolute; top: 4px; left: 4px; font-size: 1rem; background: rgba(0,0,0,0.7); border-radius: 4px; padding: 2px 4px; }
+        .glass-admin { background: rgba(234, 179, 8, 0.1); backdrop-filter: blur(12px); border: 1px solid rgba(234, 179, 8, 0.3); }
+        .profile-name { text-align: center; font-weight: 600; color: #94a3b8; font-size: 0.9rem; transition: color 0.3s ease; }
+        .add-profile-card .profile-avatar { border: 3px dashed #475569; background: transparent; }
+        .add-profile-card:hover .profile-avatar { border-color: #22d3ee; box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); }
         
-        /* Badge Superior Derecha */
-        .current-user-badge { 
-            position: fixed; top: 20px; right: 20px; z-index: 60; 
-            display: flex; align-items: center; gap: 10px; 
-            padding: 8px 16px; border-radius: 20px; 
-            background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1);
-            cursor: pointer; transition: all 0.3s ease; 
-        }
-        .current-user-badge:hover { background: rgba(168, 85, 247, 0.3); border-color: #a855f7; }
-        @media (max-width: 768px) { .current-user-badge { top: 75px; right: 10px; padding: 6px 12px; } }
-
-        /* Observer Restriction */
-        .observer-hidden { display: none !important; }
-
+        /* PIN Styles */
+        .pin-container { display: flex; gap: 12px; justify-content: center; margin: 20px 0; }
+        .pin-digit { width: 60px; height: 70px; background: rgba(30, 41, 59, 0.8); border: 2px solid #475569; border-radius: 12px; font-size: 2rem; font-family: 'Orbitron', sans-serif; color: #fff; text-align: center; transition: all 0.2s ease; }
+        .pin-digit:focus { border-color: #a855f7; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); transform: scale(1.05); }
+        .pin-digit.filled { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; }
+        .pin-digit.error { border-color: #ef4444; animation: shake 0.5s ease; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        
         /* Avatars */
         .avatar-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
         .avatar-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
@@ -80,125 +62,121 @@
         .avatar-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
         .avatar-violet { background: linear-gradient(135deg, #a855f7, #9333ea); }
         .avatar-pink { background: linear-gradient(135deg, #ec4899, #db2777); }
+        .avatar-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
+        .avatar-option { width: 60px; height: 60px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; border: 3px solid transparent; transition: all 0.2s ease; }
+        .avatar-option:hover { transform: scale(1.1); }
+        .avatar-option.selected { border-color: #fff; box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+        .color-selector { display: flex; gap: 8px; justify-content: center; margin: 15px 0; flex-wrap: wrap; }
+        .color-option { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.2s ease; }
+        .color-option:hover { transform: scale(1.15); }
+        .color-option.selected { border-color: #fff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
         
-        /* PIN & Admin */
-        .pin-container { display: flex; gap: 10px; justify-content: center; margin: 20px 0; }
-        .pin-digit { width: 50px; height: 60px; background: #1e293b; border: 2px solid #475569; border-radius: 8px; font-size: 24px; color: white; text-align: center; }
-        .pin-digit:focus { border-color: #a855f7; outline: none; }
-        .pin-digit.filled { border-color: #a855f7; background: rgba(168,85,247,0.1); }
-        .glass-admin { background: rgba(234, 179, 8, 0.15); backdrop-filter: blur(12px); border: 1px solid rgba(234, 179, 8, 0.4); }
-        .avatar-selector, .color-selector { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
-        .avatar-option, .color-option { cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
-        .avatar-option:hover, .color-option:hover { transform: scale(1.1); }
-        .avatar-option.selected, .color-option.selected { border-color: white; box-shadow: 0 0 10px white; }
+        /* App Styles */
+        .mvp-card { background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(168, 85, 247, 0.15)); border: 1px solid rgba(34, 211, 238, 0.3); position: relative; overflow: hidden; }
+        .mvp-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, rgba(34, 211, 238, 0.1), transparent 30%); animation: rotate 4s linear infinite; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        .game-card { background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(168, 85, 247, 0.15)); border: 1px solid rgba(236, 72, 153, 0.3); }
+        .rank-badge { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; }
+        .rank-1 { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+        .rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #cd7f32, #a0522d); color: #fff; }
+        .rank-other { background: #334155; color: #94a3b8; }
+        .expand-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .expand-content.expanded { max-height: 500px; }
+        .edit-mode { border-color: #f59e0b !important; box-shadow: 0 0 20px rgba(245, 158, 11, 0.2) !important; }
+        .current-user-badge { position: fixed; top: 70px; right: 10px; z-index: 45; display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; }
+        .current-user-badge:hover { background: rgba(168, 85, 247, 0.2); }
+        @media (min-width: 768px) { .current-user-badge { top: 20px; right: 20px; } }
+        .observer-hidden { display: none !important; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <div id="currentUserBadge" onclick="logout()" class="current-user-badge hidden">
-        <div id="currentUserAvatar" class="w-8 h-8 rounded-md flex items-center justify-center text-lg font-bold"></div>
-        <span id="currentUserName" class="text-sm text-white font-bold hidden md:inline"></span>
-        <i class="fas fa-sign-out-alt text-slate-400 text-xs ml-1"></i>
+    <div id="adminSetupScreen" class="fixed inset-0 z-[200] bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 hidden flex items-center justify-center p-4">
+        <div class="glass-admin rounded-3xl p-8 max-w-md w-full text-center relative z-10">
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-6"><i class="fas fa-shield-alt text-4xl text-white"></i></div>
+            <h2 class="font-gaming text-2xl text-yellow-400 mb-2">Configuración Inicial</h2>
+            <p class="text-slate-400 text-sm mb-6">Creá tu PIN de Administrador.<br><strong class="text-yellow-300">¡Guardalo bien!</strong></p>
+            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase">PIN Admin (4 dígitos)</label><div class="pin-container" id="adminSetupPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div></div>
+            <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase">Confirmar PIN</label><div class="pin-container" id="adminConfirmPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div></div>
+            <p id="adminSetupError" class="text-red-400 text-sm mb-4 hidden"></p>
+            <button onclick="saveAdminPin()" class="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform"><i class="fas fa-lock mr-2"></i>GUARDAR PIN ADMIN</button>
+        </div>
     </div>
 
     <div id="loginScreen">
         <div class="bg-orb w-64 h-64 bg-purple-600 top-0 left-0"></div>
-        <div class="bg-orb w-96 h-96 bg-cyan-600 bottom-0 right-0"></div>
-        <div class="relative z-10 w-full max-w-3xl flex flex-col items-center">
-            <div class="mb-10 text-center">
-                <i class="fas fa-dice-d20 text-5xl text-neon-cyan mb-4"></i>
-                <h1 class="font-gaming text-4xl bg-gradient-to-r from-neon-cyan to-neon-violet bg-clip-text text-transparent">BG TRACKER</h1>
-                <p class="text-slate-400">Selecciona tu perfil</p>
+        <div class="bg-orb w-96 h-96 bg-cyan-600 bottom-0 right-0" style="animation-delay: -5s"></div>
+        <div class="relative z-10 w-full max-w-3xl">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center gap-3 mb-4"><div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-violet to-neon-cyan flex items-center justify-center"><i class="fas fa-dice-d20 text-3xl text-white"></i></div></div>
+                <h1 class="font-gaming text-3xl md:text-4xl bg-gradient-to-r from-neon-cyan to-neon-violet bg-clip-text text-transparent">BOARDGAME TRACKER</h1>
+                <p class="text-slate-400 mt-2">¿Quién está jugando?</p>
             </div>
-            <div id="profilesGrid" class="flex flex-wrap justify-center gap-6">
-                <p class="text-slate-500 animate-pulse">Cargando perfiles...</p>
-            </div>
-            <button onclick="requestAdminAccess()" class="mt-12 text-xs text-yellow-500 border border-yellow-500/30 px-4 py-2 rounded-full hover:bg-yellow-500/10">
-                <i class="fas fa-cog"></i> Administrar
-            </button>
+            <div id="profilesGrid" class="flex flex-wrap justify-center gap-6 md:gap-8"></div>
+            <div class="text-center mt-12"><button id="btnManageProfiles" onclick="requestAdminAccess()" class="text-yellow-400/70 hover:text-yellow-400 text-sm border border-yellow-500/30 px-6 py-2 rounded-full hover:border-yellow-500/60 transition-all hover:bg-yellow-500/10"><i class="fas fa-shield-alt mr-2"></i>Administrar perfiles</button></div>
         </div>
     </div>
 
-    <div id="adminSetupScreen" class="fixed inset-0 z-[200] bg-slate-900 hidden flex items-center justify-center p-4">
-        <div class="glass-admin p-8 rounded-2xl text-center max-w-sm w-full">
-            <h2 class="text-yellow-400 font-bold text-xl mb-4">Configurar Admin</h2>
-            <p class="text-xs text-slate-300 mb-4">Crea un PIN maestro para gestionar perfiles.</p>
-            <div class="pin-container" id="setupAdminPin"><input type="password" class="pin-digit" maxlength="1"><input type="password" class="pin-digit" maxlength="1"><input type="password" class="pin-digit" maxlength="1"><input type="password" class="pin-digit" maxlength="1"></div>
-            <button onclick="saveAdminPin()" class="bg-yellow-600 text-black font-bold py-3 px-6 rounded-xl w-full hover:bg-yellow-500">Guardar</button>
+    <div id="adminPinModal" class="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass-admin rounded-3xl p-8 max-w-sm w-full text-center">
+            <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-4"><i class="fas fa-shield-alt text-2xl text-white"></i></div>
+            <h3 class="font-gaming text-xl text-yellow-400 mb-2">Acceso Admin</h3>
+            <div class="pin-container" id="adminPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div>
+            <p id="adminPinError" class="text-red-400 text-sm mt-4 hidden">PIN incorrecto</p>
+            <button onclick="closeAdminPinModal()" class="mt-6 text-slate-400 hover:text-white text-sm"><i class="fas fa-arrow-left mr-2"></i>Cancelar</button>
         </div>
     </div>
 
-    <div id="pinModal" class="fixed inset-0 z-[150] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="glass p-8 rounded-2xl text-center max-w-xs w-full border border-slate-600">
-            <div id="pinAvatarDisplay" class="w-20 h-20 mx-auto rounded-xl flex items-center justify-center text-4xl mb-4"></div>
-            <h3 id="pinUserTitle" class="text-white font-bold text-lg mb-2"></h3>
-            <p class="text-xs text-slate-400 mb-4">Ingresa tu PIN</p>
-            <div class="pin-container" id="loginPin"><input type="password" class="pin-digit" maxlength="1"><input type="password" class="pin-digit" maxlength="1"><input type="password" class="pin-digit" maxlength="1"><input type="password" class="pin-digit" maxlength="1"></div>
-            <button onclick="closePinModal()" class="text-slate-500 text-sm mt-4">Cancelar</button>
+    <div id="pinModal" class="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass rounded-3xl p-8 max-w-sm w-full text-center">
+            <div id="pinAvatar" class="w-24 h-24 rounded-xl mx-auto mb-4 flex items-center justify-center text-4xl"></div>
+            <h3 id="pinUserName" class="font-gaming text-xl text-white mb-2"></h3>
+            <div class="pin-container" id="userPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div>
+            <p id="pinError" class="text-red-400 text-sm mt-4 hidden">PIN incorrecto</p>
+            <button onclick="closePinModal()" class="mt-6 text-slate-400 hover:text-white text-sm"><i class="fas fa-arrow-left mr-2"></i>Volver</button>
         </div>
     </div>
 
-    <div id="editProfileModal" class="fixed inset-0 z-[160] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="glass-admin p-6 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 id="editProfileTitle" class="text-yellow-400 font-bold text-xl mb-4 text-center">Editar Perfil</h3>
-            <input type="hidden" id="editProfileId">
-            
-            <div class="mb-4 text-center">
-                <div id="previewAvatar" class="w-24 h-24 mx-auto rounded-xl flex items-center justify-center text-5xl mb-2 transition-all"></div>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs text-slate-400 uppercase font-bold">Nombre</label>
-                    <input id="profileNameInput" type="text" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:border-yellow-500">
-                </div>
-                
-                <div class="flex items-center gap-3 bg-slate-900/50 p-3 rounded-lg border border-slate-700">
-                    <input type="checkbox" id="profileIsObserver" class="w-5 h-5 accent-yellow-500">
-                    <label for="profileIsObserver" class="text-sm text-slate-300 select-none">Modo Observador (Solo ver) 👁️</label>
-                </div>
-
-                <div>
-                    <label class="text-xs text-slate-400 uppercase font-bold">Avatar</label>
-                    <div id="emojiSelector" class="avatar-selector"></div>
-                </div>
-                
-                <div>
-                    <label class="text-xs text-slate-400 uppercase font-bold">Color</label>
-                    <div id="colorSelector" class="color-selector"></div>
-                </div>
-            </div>
-
-            <div class="flex gap-3 mt-6">
-                <button onclick="closeEditProfileModal()" class="flex-1 py-3 border border-slate-600 text-slate-300 rounded-xl">Cancelar</button>
-                <button onclick="saveProfile()" class="flex-1 py-3 bg-yellow-600 text-black font-bold rounded-xl hover:bg-yellow-500">Guardar</button>
-            </div>
-            <div id="adminActions" class="mt-4 pt-4 border-t border-slate-700 hidden">
-                <button onclick="deleteProfile()" class="w-full text-red-400 text-sm py-2 hover:bg-red-900/20 rounded">Eliminar Perfil</button>
-            </div>
+    <div id="setupPinModal" class="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass rounded-3xl p-8 max-w-md w-full text-center">
+            <div id="setupPinAvatar" class="w-20 h-20 rounded-xl mx-auto mb-4 flex items-center justify-center text-4xl"></div>
+            <h3 class="font-gaming text-xl text-neon-cyan mb-2">¡Bienvenido!</h3>
+            <p class="text-slate-400 text-sm mb-6">Creá tu PIN personal.</p>
+            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase">Crear PIN</label><div class="pin-container" id="setupPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div></div>
+            <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase">Confirmar PIN</label><div class="pin-container" id="confirmPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div></div>
+            <p id="setupPinError" class="text-red-400 text-sm mb-4 hidden"></p>
+            <button onclick="savePersonalPin()" class="w-full py-4 bg-gradient-to-r from-neon-violet to-neon-cyan rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform mb-3"><i class="fas fa-lock mr-2"></i>GUARDAR PIN</button>
+            <button onclick="skipPersonalPin()" class="text-slate-500 hover:text-slate-300 text-xs">Omitir (sin protección)</button>
         </div>
     </div>
 
-    <div id="mainApp" class="hidden">
+    <div id="editProfileModal" class="fixed inset-0 z-[160] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass-admin rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6"><h3 id="editProfileTitle" class="font-gaming text-xl text-yellow-400">Nuevo Perfil</h3><button onclick="closeEditProfileModal()" class="text-slate-400 hover:text-white"><i class="fas fa-times text-xl"></i></button></div>
+            <input type="hidden" id="editProfileId" value="">
+            <div class="text-center mb-6"><div id="previewAvatar" class="w-20 h-20 rounded-xl mx-auto mb-2 flex items-center justify-center text-4xl avatar-violet">😀</div></div>
+            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Nombre</label><input type="text" id="profileNameInput" placeholder="Nombre" maxlength="15" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"></div>
+            <div class="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl mb-4 border border-slate-700"><input type="checkbox" id="profileIsObserver" class="w-5 h-5 accent-yellow-500 rounded cursor-pointer"><label for="profileIsObserver" class="text-sm text-slate-300 cursor-pointer select-none flex-1">Modo Observador (Solo Lectura) 👁️</label></div>
+            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Avatar</label><div class="avatar-selector" id="emojiSelector"></div></div>
+            <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Color</label><div class="color-selector" id="colorSelector"></div></div>
+            <div class="flex gap-3"><button onclick="closeEditProfileModal()" class="flex-1 py-3 border border-slate-600 rounded-xl text-slate-300 hover:bg-slate-800 transition-colors">Cancelar</button><button onclick="saveProfile()" class="flex-1 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl font-bold text-black hover:opacity-90 transition-opacity">Guardar</button></div>
+            <div id="adminProfileActions" class="hidden mt-4 space-y-2"><button onclick="resetUserPin()" class="w-full py-3 border border-blue-500/50 text-blue-400 rounded-xl hover:bg-blue-500/20 transition-colors">Resetear PIN</button><button onclick="deleteProfile()" class="w-full py-3 border border-red-500/50 text-red-400 rounded-xl hover:bg-red-500/20 transition-colors">Eliminar perfil</button></div>
+        </div>
+    </div>
+
+    <div id="mainApp" class="hidden pb-24 md:pb-0 md:pl-64 min-h-screen">
+        <div class="bg-orb w-64 h-64 bg-purple-600 top-0 left-0"></div>
+        <div class="bg-orb w-96 h-96 bg-cyan-600 bottom-0 right-0" style="animation-delay: -5s"></div>
+        <div id="currentUserBadge" onclick="logout()" class="current-user-badge glass" title="Cambiar perfil"><div id="currentUserAvatar" class="w-8 h-8 rounded-lg flex items-center justify-center text-lg"></div><span id="currentUserName" class="text-sm text-slate-300 hidden md:inline"></span><i class="fas fa-sign-out-alt text-slate-500 text-sm"></i></div>
         
         <header class="md:hidden glass sticky top-0 z-50 p-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <i class="fas fa-dice-d20 text-neon-cyan text-xl"></i>
-                <h1 class="font-gaming font-bold text-lg bg-gradient-to-r from-neon-cyan to-neon-violet bg-clip-text text-transparent">BG TRACKER</h1>
-            </div>
+            <div class="flex items-center gap-2"><i class="fas fa-dice-d20 text-neon-cyan text-xl"></i><h1 class="font-gaming font-bold text-lg bg-gradient-to-r from-neon-cyan to-neon-violet bg-clip-text text-transparent">BG TRACKER</h1></div>
             <div id="statusIndicator" class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_red]"></div>
         </header>
 
         <nav class="hidden md:flex fixed left-0 top-0 h-full w-64 glass flex-col p-6 z-40 border-r border-slate-800">
-            <div class="flex items-center gap-3 mb-10">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-violet to-neon-cyan flex items-center justify-center">
-                    <i class="fas fa-dice-d20 text-white"></i>
-                </div>
-                <div>
-                    <h1 class="font-gaming font-bold text-lg">BG TRACKER</h1>
-                    <p id="desktopStatus" class="text-[10px] text-red-400">● Desconectado</p>
-                </div>
-            </div>
+            <div class="flex items-center gap-3 mb-10"><div class="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-violet to-neon-cyan flex items-center justify-center"><i class="fas fa-dice-d20 text-white"></i></div><div><h1 class="font-gaming font-bold text-lg">BG TRACKER</h1><p id="desktopStatus" class="text-[10px] text-red-400">● Desconectado</p></div></div>
             <div class="flex flex-col gap-2">
                 <button onclick="nav('dashboard')" class="nav-btn active flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="dashboard"><i class="fas fa-chart-pie w-5"></i> Dashboard</button>
                 <button onclick="nav('analytics')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="analytics"><i class="fas fa-chart-line w-5"></i> Analytics</button>
@@ -209,62 +187,79 @@
             </div>
         </nav>
 
-        <main class="max-w-5xl mx-auto p-4 md:p-8 relative z-10 pb-24 md:pb-8 md:pl-64">
+        <main class="max-w-5xl mx-auto p-4 md:p-8 relative z-10">
             <section id="dashboard" class="section active">
                 <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-neon-violet">📊</span> Estadísticas</h2>
-                <div id="dashboardAlert" class="hidden mb-6 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-red-500/20 transition-all" onclick="nav('justice')">
-                    <div class="flex items-center gap-3"><div class="animate-pulse w-2 h-2 bg-red-500 rounded-full"></div><span class="text-red-300 text-sm font-bold">¡Hay sanciones activas!</span></div>
-                    <i class="fas fa-chevron-right text-red-400"></i>
-                </div>
-                <div class="glass p-4 rounded-2xl mb-6 text-center"><p class="text-slate-400 text-xs uppercase mb-1">Partidas Jugadas</p><p id="kpiTotal" class="font-gaming text-5xl text-white">0</p></div>
+                <div id="dashboardAlert" class="hidden mb-6 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-red-500/20 transition-all" onclick="nav('justice')"><div class="flex items-center gap-3"><div class="animate-pulse w-2 h-2 bg-red-500 rounded-full"></div><span class="text-red-300 text-sm font-bold">¡Hay sanciones activas!</span></div><i class="fas fa-chevron-right text-red-400"></i></div>
+                <div class="glass p-4 rounded-2xl mb-6 text-center"><p class="text-slate-400 text-xs uppercase mb-1">Total Partidas Jugadas</p><p id="kpiTotal" class="font-gaming text-5xl text-white">0</p></div>
                 <div class="grid md:grid-cols-2 gap-4 mb-6">
-                    <div class="mvp-card p-5 rounded-2xl relative z-10"><div class="relative z-10"><div class="flex items-center justify-between mb-3"><p class="text-slate-300 text-xs uppercase font-bold flex items-center gap-2"><i class="fas fa-trophy text-yellow-400"></i> MVP</p><button onclick="toggleRanking('players')" class="text-xs text-neon-cyan hover:underline"><span id="togglePlayersText">Ver Top 5</span></button></div><div id="mvpMain" class="flex items-center gap-4"><div class="w-14 h-14 rounded-full bg-gradient-to-br from-neon-cyan to-neon-violet flex items-center justify-center text-2xl">👑</div><div><p id="kpiMVPName" class="font-gaming text-2xl text-neon-cyan">-</p><p id="kpiMVPWins" class="text-sm text-slate-400">0 victorias</p></div></div><div id="playersRanking" class="expand-content mt-4"><div class="border-t border-slate-700 pt-3 space-y-2" id="playersRankingList"></div></div></div></div>
-                    <div class="game-card p-5 rounded-2xl"><div class="flex items-center justify-between mb-3"><p class="text-slate-300 text-xs uppercase font-bold flex items-center gap-2"><i class="fas fa-fire text-neon-pink"></i> Juego Favorito</p><button onclick="toggleRanking('games')" class="text-xs text-neon-pink hover:underline"><span id="toggleGamesText">Ver Top 5</span></button></div><div id="gameMain" class="flex items-center gap-4"><div class="w-14 h-14 rounded-full bg-gradient-to-br from-neon-pink to-neon-violet flex items-center justify-center text-2xl">🎲</div><div><p id="kpiGameName" class="font-gaming text-2xl text-neon-pink">-</p><p id="kpiGameCount" class="text-sm text-slate-400">0 partidas</p></div></div><div id="gamesRanking" class="expand-content mt-4"><div class="border-t border-slate-700 pt-3 space-y-2" id="gamesRankingList"></div></div></div>
+                    <div class="mvp-card p-5 rounded-2xl relative z-10"><div class="relative z-10"><div class="flex items-center justify-between mb-3"><p class="text-slate-300 text-xs uppercase font-bold flex items-center gap-2"><i class="fas fa-trophy text-yellow-400"></i> MVP</p><button onclick="toggleRanking('players')" class="text-xs text-neon-cyan hover:underline"><span id="togglePlayersText">Ver Top 5</span> <i class="fas fa-chevron-down text-[10px]"></i></button></div><div id="mvpMain" class="flex items-center gap-4"><div class="w-14 h-14 rounded-full bg-gradient-to-br from-neon-cyan to-neon-violet flex items-center justify-center text-2xl">👑</div><div><p id="kpiMVPName" class="font-gaming text-2xl text-neon-cyan">-</p><p id="kpiMVPWins" class="text-sm text-slate-400">0 victorias</p></div></div><div id="playersRanking" class="expand-content mt-4"><div class="border-t border-slate-700 pt-3 space-y-2" id="playersRankingList"></div></div></div></div>
+                    <div class="game-card p-5 rounded-2xl"><div class="flex items-center justify-between mb-3"><p class="text-slate-300 text-xs uppercase font-bold flex items-center gap-2"><i class="fas fa-fire text-neon-pink"></i> Juego Favorito</p><button onclick="toggleRanking('games')" class="text-xs text-neon-pink hover:underline"><span id="toggleGamesText">Ver Top 5</span> <i class="fas fa-chevron-down text-[10px]"></i></button></div><div id="gameMain" class="flex items-center gap-4"><div class="w-14 h-14 rounded-full bg-gradient-to-br from-neon-pink to-neon-violet flex items-center justify-center text-2xl">🎲</div><div><p id="kpiGameName" class="font-gaming text-2xl text-neon-pink">-</p><p id="kpiGameCount" class="text-sm text-slate-400">0 partidas</p></div></div><div id="gamesRanking" class="expand-content mt-4"><div class="border-t border-slate-700 pt-3 space-y-2" id="gamesRankingList"></div></div></div>
                 </div>
                 <div class="grid md:grid-cols-2 gap-6"><div class="glass p-5 rounded-2xl"><h3 class="text-sm font-bold mb-4 text-slate-300">Victorias</h3><div class="h-48"><canvas id="chartWins"></canvas></div></div><div class="glass p-5 rounded-2xl"><h3 class="text-sm font-bold mb-4 text-slate-300">Juegos</h3><div class="h-48"><canvas id="chartGames"></canvas></div></div></div>
             </section>
 
             <section id="analytics" class="section">
                 <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2 text-neon-cyan"><i class="fas fa-chart-line"></i> Analytics</h2>
-                <div class="glass p-5 rounded-2xl mb-6"><h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2"><i class="fas fa-percentage text-neon-cyan"></i> Tasa de Efectividad (Win Rate)</h3><p class="text-xs text-slate-500 mb-4">Min. 3 partidas jugadas.</p><div class="h-64"><canvas id="chartWinRate"></canvas></div></div>
-                <div class="glass p-5 rounded-2xl"><h3 class="font-bold mb-4 text-slate-300">Detalle</h3><div id="analyticsTable" class="space-y-2"></div></div>
+                <div class="glass p-5 rounded-2xl mb-6">
+                    <h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2"><i class="fas fa-percentage text-neon-cyan"></i> Tasa de Efectividad (Win Rate)</h3>
+                    <p class="text-xs text-slate-500 mb-4">Porcentaje de victorias sobre partidas jugadas (Mínimo 3 partidas).</p>
+                    <div class="h-64"><canvas id="chartWinRate"></canvas></div>
+                </div>
+                <div class="glass p-5 rounded-2xl">
+                    <h3 class="font-bold mb-4 text-slate-300">Detalle de Rendimiento</h3>
+                    <div id="analyticsTable" class="space-y-2"></div>
+                </div>
             </section>
 
             <section id="justice" class="section">
                 <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2 text-neon-red"><span class="text-3xl">⚖️</span> Sala de Justicia</h2>
                 <div id="wallOfShameCard" class="mb-8 p-6 rounded-2xl transition-all duration-500"></div>
-                <div class="glass p-6 rounded-2xl">
-                    <h3 class="font-gaming text-lg mb-4 text-slate-300 flex items-center gap-2"><i class="fas fa-calendar-times text-slate-500"></i> Bitácora de Ausencias</h3>
-                    <div id="absenceBoard" class="space-y-3 max-h-[500px] overflow-y-auto pr-2"></div>
-                </div>
+                <div class="glass p-6 rounded-2xl"><h3 class="font-gaming text-lg mb-4 text-slate-300 flex items-center gap-2"><i class="fas fa-calendar-times text-slate-500"></i> Bitácora de Ausencias</h3><div id="absenceBoard" class="space-y-3 max-h-[500px] overflow-y-auto pr-2"><div class="text-center text-slate-500 py-4">Cargando datos...</div></div></div>
             </section>
 
             <section id="register" class="section">
                 <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span id="registerIcon" class="text-neon-cyan">🎯</span> <span id="registerTitle">Nueva Partida</span></h2>
                 <div id="registerCard" class="glass p-6 rounded-2xl max-w-xl mx-auto">
-                    <input type="hidden" id="editMatchId">
-                    <div id="editModeBanner" class="hidden mb-4 bg-amber-500/20 border border-amber-500/50 p-3 rounded-xl flex justify-between items-center"><div class="flex gap-2 text-amber-400"><i class="fas fa-edit"></i> Editando</div><button onclick="cancelEditMatch()" class="text-xs underline">Cancelar</button></div>
+                    <input type="hidden" id="editMatchId" value="">
+                    <div id="editModeBanner" class="hidden mb-4 bg-amber-500/20 border border-amber-500/50 p-3 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><i class="fas fa-edit text-amber-400"></i><span class="text-amber-200 text-sm">Modo Edición</span></div><button onclick="cancelEditMatch()" class="text-xs text-amber-400 hover:text-amber-200 underline">Cancelar</button></div>
                     <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Fecha</label><input type="date" id="inputDate" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"></div>
-                    <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Juego</label><select id="inputGame" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white" onchange="updateGameMode()"><option>Selecciona...</option></select><p id="gameModeHint" class="text-xs mt-2 text-neon-pink hidden"><i class="fas fa-calculator"></i> Modo Puntos</p></div>
-                    <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Jugadores</label><div id="gridPlayers" class="grid grid-cols-3 gap-2"></div></div>
+                    <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Juego</label><select id="inputGame" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white" onchange="updateGameMode()"><option value="">Selecciona...</option></select><p id="gameModeHint" class="text-xs mt-2 text-neon-pink hidden"><i class="fas fa-calculator"></i> Modo Puntos</p></div>
+                    <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Participantes</label><div id="gridPlayers" class="grid grid-cols-3 gap-2"></div><p id="msgNoPlayers" class="text-xs text-red-400 mt-2 hidden">Cargando jugadores...</p></div>
                     <div id="sectionScores" class="mb-5 hidden"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Puntajes</label><div id="gridScores" class="grid grid-cols-2 gap-3"></div></div>
-                    <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Ganador</label><select id="inputWinner" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white" disabled><option>Ganador...</option></select></div>
-                    <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Notas</label><textarea id="inputNotes" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white text-sm" rows="2"></textarea></div>
-                    <button id="btnSubmitMatch" onclick="submitMatch()" class="w-full py-4 bg-gradient-to-r from-neon-violet to-neon-cyan rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform">GUARDAR</button>
+                    <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Ganador</label><select id="inputWinner" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white disabled:opacity-50" disabled><option value="">Selecciona jugadores...</option></select></div>
+                    <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Notas</label><textarea id="inputNotes" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white text-sm" rows="2" placeholder="Comentarios..."></textarea></div>
+                    <button id="btnSubmitMatch" onclick="submitMatch()" class="w-full py-4 bg-gradient-to-r from-neon-violet to-neon-cyan rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform"><i class="fas fa-save mr-2"></i>GUARDAR PARTIDA</button>
                 </div>
             </section>
 
             <section id="history" class="section">
                 <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-neon-pink">📜</span> Historial</h2>
-                <div id="listHistory" class="space-y-3 pb-20"></div>
+                <div id="listHistory" class="space-y-3 pb-20"><div class="text-center py-10 text-slate-500">Cargando datos...</div></div>
             </section>
 
             <section id="settings" class="section">
                 <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-slate-400">⚙️</span> Ajustes</h2>
                 <div class="mb-6 bg-blue-900/20 border border-blue-500/30 p-4 rounded-xl text-center"><p class="text-sm text-blue-200">☁️ <strong>Sincronización Total:</strong> Los cambios se verán en todos los dispositivos.</p></div>
                 <div class="grid md:grid-cols-2 gap-6">
-                    <div class="glass p-5 rounded-2xl"><h3 class="font-bold mb-4 text-neon-cyan">Jugadores</h3><div class="bg-slate-800/50 p-3 rounded-xl mb-4"><div class="grid grid-cols-2 gap-2 mb-2"><input id="playerNick" placeholder="Nick" class="bg-slate-900 border border-slate-600 rounded p-2 text-sm w-full text-white"><input id="playerReal" placeholder="Nombre" class="bg-slate-900 border border-slate-600 rounded p-2 text-sm w-full text-white"></div><button onclick="savePlayer()" class="w-full bg-slate-700 text-white py-2 rounded text-xs">AGREGAR</button></div><div id="listPlayers" class="flex flex-col gap-2"></div></div>
-                    <div class="glass p-5 rounded-2xl"><h3 class="font-bold mb-4 text-neon-violet">Juegos</h3><div class="bg-slate-800/50 p-3 rounded-xl mb-4"><input id="newGameName" placeholder="Juego" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm mb-2 text-white"><div class="flex gap-2 mb-2"><button id="btnTypeDirect" onclick="setGameType('direct')" class="flex-1 text-xs py-2 border rounded text-white">Directo</button><button id="btnTypeScore" onclick="setGameType('score')" class="flex-1 text-xs py-2 border rounded text-slate-400">Puntos</button></div><button onclick="saveGame()" class="w-full bg-slate-700 text-white py-2 rounded text-xs">AGREGAR</button></div><div id="listGames" class="space-y-2"></div></div>
+                    <div class="glass p-5 rounded-2xl">
+                        <h3 class="font-bold mb-4 text-neon-cyan"><i class="fas fa-users"></i> Jugadores</h3>
+                        <div class="bg-slate-800/50 p-3 rounded-xl mb-4 border border-slate-700">
+                            <input type="hidden" id="editPlayerIndex" value="-1">
+                            <div class="grid grid-cols-2 gap-2 mb-2"><input id="playerNick" type="text" placeholder="Nickname" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-white w-full"><input id="playerReal" type="text" placeholder="Nombre Real" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-white w-full"></div>
+                            <button id="btnSavePlayer" onclick="savePlayer()" class="w-full bg-slate-700 hover:bg-neon-cyan/50 hover:text-white text-slate-300 py-2 rounded-lg text-xs font-bold transition-colors">AGREGAR JUGADOR</button><button id="btnCancelEditPlayer" onclick="cancelEditPlayer()" class="w-full mt-1 text-red-400 text-xs hidden">Cancelar Edición</button>
+                        </div>
+                        <div id="listPlayers" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1"></div>
+                    </div>
+                    <div class="glass p-5 rounded-2xl">
+                        <h3 class="font-bold mb-4 text-neon-violet"><i class="fas fa-dice"></i> Juegos</h3>
+                        <div class="bg-slate-800/50 p-3 rounded-xl mb-4 border border-slate-700">
+                            <input type="hidden" id="editGameIndex" value="-1"><input id="newGameName" type="text" placeholder="Nombre del juego" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm mb-2">
+                            <div class="flex gap-2 mb-2"><button onclick="setGameType('direct')" id="btnTypeDirect" class="flex-1 py-2 rounded-lg text-xs font-bold border-2 border-neon-cyan bg-neon-cyan/20 text-neon-cyan"><i class="fas fa-crown"></i> Directo</button><button onclick="setGameType('score')" id="btnTypeScore" class="flex-1 py-2 rounded-lg text-xs font-bold border-2 border-slate-600 text-slate-400"><i class="fas fa-calculator"></i> Puntos</button></div>
+                            <button id="btnSaveGame" onclick="saveGame()" class="w-full bg-slate-700 hover:bg-neon-violet/50 hover:text-white text-slate-300 py-2 rounded-lg text-xs font-bold transition-colors">AGREGAR JUEGO</button><button id="btnCancelEditGame" onclick="cancelEditGame()" class="w-full mt-1 text-red-400 text-xs hidden">Cancelar Edición</button>
+                        </div>
+                        <div id="listGames" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div>
+                    </div>
                 </div>
             </section>
         </main>
@@ -272,9 +267,9 @@
         <nav class="md:hidden fixed bottom-0 w-full glass border-t border-slate-800 p-2 z-50 flex justify-around">
             <button onclick="nav('dashboard')" class="nav-btn active flex flex-col items-center p-2 rounded-lg text-xs" data-target="dashboard"><i class="fas fa-chart-pie text-lg mb-1"></i></button>
             <button onclick="nav('analytics')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="analytics"><i class="fas fa-chart-line text-lg mb-1"></i></button>
-            <button id="mobRegister" onclick="nav('register')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="register"><i class="fas fa-plus-circle text-2xl mb-1 text-neon-cyan"></i></button>
+            <button onclick="nav('register')" id="mobRegister" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="register"><i class="fas fa-plus-circle text-2xl mb-1 text-neon-cyan"></i></button>
             <button onclick="nav('justice')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="justice"><i class="fas fa-balance-scale text-lg mb-1"></i></button>
-            <button id="mobSettings" onclick="nav('settings')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="settings"><i class="fas fa-cog text-lg mb-1"></i></button>
+            <button onclick="nav('settings')" id="mobSettings" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="settings"><i class="fas fa-cog text-lg mb-1"></i></button>
         </nav>
     </div>
 
@@ -283,119 +278,90 @@
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnZGV1cm93amF3aXNlZWhvZXRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxNDgxMjksImV4cCI6MjA4MzcyNDEyOX0.abfEkpQgjUXfr0BVeu-6s6dRBxAIqyALfu0ILdLk7VA';
         const sbClient = window.supabase.createClient(SB_URL, SB_KEY);
 
-        // Assets
         const AVATAR_EMOJIS = ['😀', '😎', '🤓', '😈', '👻', '🤖', '👽', '🎮', '🎲', '🃏', '🦊', '🐱', '🐶', '🦁', '🐸', '🦄'];
         const AVATAR_COLORS = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'violet', 'pink'];
 
-        // State
-        let adminPin = null, profiles = [], currentUser = null, isAdminMode = false;
-        let selectedEmoji = '😀', selectedColor = 'violet';
-        let config = { players: [], games: [] }, matches = [], activePlayers = [];
-        let selectedGameType = 'direct', pendingProfile = null, mySubscription = null;
+        let adminPin = null; let profiles = []; let currentUser = null; let isAdminMode = false;
+        let selectedEmoji = '😀'; let selectedColor = 'violet'; let config = { players: [], games: [] };
+        let matches = []; let activePlayers = []; let selectedGameType = 'direct'; let pendingProfile = null; let mySubscription = null;
 
-        // Init
         document.addEventListener('DOMContentLoaded', async () => {
             initCharts(); await loadAdminPin(); await loadProfiles();
-            if (!adminPin) { showAdminSetup(); } 
-            else {
+            if (!adminPin) { showAdminSetup(); } else {
                 renderProfiles(); setupAllPinInputs(); renderAvatarSelectors();
                 const savedUser = sessionStorage.getItem('currentUser');
                 if (savedUser) {
                     try {
                         const saved = JSON.parse(savedUser);
                         const found = profiles.find(p => p.id === saved.id);
-                        if (found) { currentUser = found; updateCurrentUserBadge(); await enterApp(); } 
+                        if (found) { currentUser = found; updateCurrentUserBadge(); await enterApp(); }
                         else { sessionStorage.removeItem('currentUser'); }
                     } catch (e) { console.error(e); }
                 }
             }
         });
 
-        // Utils
-        function simpleHash(str) { let hash = 0; for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; } return Math.abs(hash).toString(16); }
-        function toast(msg) { Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: msg, showConfirmButton: false, timer: 2000, background: '#1e293b', color: '#fff' }); }
-        function setOnlineStatus(online) { const i=document.getElementById('statusIndicator'), d=document.getElementById('desktopStatus'); if(online){i.classList.replace('bg-red-500','bg-green-500'); if(d){d.innerText='● Conectado';d.className='text-[10px] text-green-400';}} else {i.classList.replace('bg-green-500','bg-red-500'); if(d){d.innerText='● Desconectado';d.className='text-[10px] text-red-400';}} }
+        function simpleHash(str) { let hash = 0; for (let i = 0; i < str.length; i++) { const char = str.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash = hash & hash; } return Math.abs(hash).toString(16); }
 
-        // Data & Sync (CORREGIDO)
-        async function loadAllData() {
-            const st = document.getElementById('desktopStatus'); if (st) st.innerText = '● Sincronizando...';
-            try {
-                const { data: cfg } = await sbClient.from('app_config').select('data').eq('key', 'main_config').single();
-                if (cfg) { config = cfg.data; config.players.sort((a,b)=>a.nickname.localeCompare(b.nickname)); config.games.sort((a,b)=>a.name.localeCompare(b.name)); }
-                const { data: m } = await sbClient.from('matches').select('*').order('played_date',{ascending:false});
-                if(m) matches = m;
-                setOnlineStatus(true); updateUI(); renderJusticeModule(); renderSettings(); renderAnalyticsModule();
-            } catch(e){ setOnlineStatus(false); }
-        }
-        async function saveConfig() { await sbClient.from('app_config').upsert({key:'main_config',data:config},{onConflict:'key'}); renderSettings(); }
-        async function loadAdminPin() { try{const{data}=await sbClient.from('app_config').select('data').eq('key','admin_pin').single(); if(data) adminPin=data.data.pin;}catch(e){} }
-        async function saveAdminToCloud(p) { await sbClient.from('app_config').upsert({key:'admin_pin',data:{pin:p}},{onConflict:'key'}); }
-        
-        // CORRECCIÓN CRÍTICA DE CARGA DE PERFILES
-        async function loadProfiles() {
-            try {
-                const { data, error } = await sbClient.from('app_config').select('data').eq('key', 'user_profiles').single();
-                if (data && data.data) {
-                    if (Array.isArray(data.data)) profiles = data.data;
-                    else if (data.data.data && Array.isArray(data.data.data)) profiles = data.data.data;
-                    else profiles = [];
-                } else { profiles = []; }
-                if (!document.getElementById('loginScreen').classList.contains('hidden')) renderProfiles();
-            } catch (e) { console.error('Load Profiles Error', e); profiles = []; }
-        }
+        async function loadAdminPin() { try { const { data } = await sbClient.from('app_config').select('data').eq('key', 'admin_pin').single(); if (data && data.data) adminPin = data.data.pin; } catch (e) { console.error(e); } }
+        async function saveAdminPinToCloud(hashedPin) { await sbClient.from('app_config').upsert({ key: 'admin_pin', data: { pin: hashedPin } }, { onConflict: 'key' }); }
+        function showAdminSetup() { document.getElementById('adminSetupScreen').classList.remove('hidden'); document.getElementById('loginScreen').classList.add('hidden'); setupPinInputsForContainer('adminSetupPinContainer'); setupPinInputsForContainer('adminConfirmPinContainer'); }
+        async function saveAdminPin() { const pin1 = getPinFromContainer('adminSetupPinContainer'); const pin2 = getPinFromContainer('adminConfirmPinContainer'); if (pin1.length !== 4 || pin1 !== pin2) return Swal.fire('Error', 'PINs inválidos', 'error'); adminPin = simpleHash(pin1); await saveAdminPinToCloud(adminPin); document.getElementById('adminSetupScreen').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); renderProfiles(); Swal.fire({ icon: 'success', title: 'Listo', timer: 1500, showConfirmButton: false, background: '#1e293b', color: '#fff' }); }
+        function requestAdminAccess() { document.getElementById('adminPinModal').classList.remove('hidden'); clearPinContainer('adminPinContainer'); document.querySelector('#adminPinContainer .pin-digit[data-index="0"]').focus(); document.getElementById('adminPinError').classList.add('hidden'); }
+        function closeAdminPinModal() { document.getElementById('adminPinModal').classList.add('hidden'); isAdminMode = false; }
+        function verifyAdminPin() { const enteredPin = getPinFromContainer('adminPinContainer'); if (simpleHash(enteredPin) === adminPin) { closeAdminPinModal(); isAdminMode = true; renderProfiles(); Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Modo Admin', showConfirmButton: false, timer: 1500, background: '#1e293b', color: '#fff' }); } else { document.getElementById('adminPinError').classList.remove('hidden'); shakeContainer('adminPinContainer'); setTimeout(() => clearPinContainer('adminPinContainer'), 500); } }
 
-        async function saveProfiles() { await sbClient.from('app_config').upsert({key:'user_profiles',data:profiles},{onConflict:'key'}); }
-        function setupRealtime() {
-            if(mySubscription) sbClient.removeChannel(mySubscription);
-            mySubscription = sbClient.channel('public:all').on('postgres_changes',{event:'*',schema:'public'}, ()=>{ loadAllData(); loadProfiles(); toast('Datos actualizados'); }).subscribe(s=>{if(s==='SUBSCRIBED')setOnlineStatus(true);});
-        }
-
-        // Login Logic
-        function showAdminSetup() { document.getElementById('adminSetupScreen').classList.remove('hidden'); document.getElementById('loginScreen').classList.add('hidden'); setupPinInputs('adminSetupPinContainer'); setupPinInputs('adminConfirmPinContainer'); }
-        async function saveAdminPin() { const p1=getPin('adminSetupPinContainer'), p2=getPin('adminConfirmPinContainer'); if(p1.length!==4||p1!==p2) return Swal.fire('Error','PINs incorrectos','error'); adminPin=simpleHash(p1); await saveAdminToCloud(adminPin); document.getElementById('adminSetupScreen').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); renderProfiles(); }
+        async function loadProfiles() { try { const { data } = await sbClient.from('app_config').select('data').eq('key', 'user_profiles').single(); if (data && data.data) { profiles = Array.isArray(data.data) ? data.data : (data.data.data || []); } else { profiles = []; } if (!document.getElementById('loginScreen').classList.contains('hidden')) renderProfiles(); } catch (e) { profiles = []; } }
+        async function saveProfiles() { await sbClient.from('app_config').upsert({ key: 'user_profiles', data: profiles }, { onConflict: 'key' }); }
         function renderProfiles() {
-            const g = document.getElementById('profilesGrid');
-            let h = profiles.map((p,i) => `<div class="profile-card" onclick="${isAdminMode ? `openEdit(${i})` : `selectProfile(${i})`}">
-                <div class="profile-avatar avatar-${p.color} ${p.pin?'has-lock':''} ${!p.pinConfigured&&!isAdminMode?'new-user':''} ${p.isObserver?'is-observer':''} ${isAdminMode?'border-yellow-500 border-2':''}">
-                    ${p.emoji} ${isAdminMode?'<div class="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl"><i class="fas fa-pencil-alt text-yellow-400"></i></div>':''}
-                </div><p class="profile-name">${p.name}</p></div>`).join('');
-            if(isAdminMode && profiles.length<12) h+=`<div class="profile-card add-profile-card" onclick="openEdit(-1)"><div class="profile-avatar border-yellow-500 text-yellow-500"><i class="fas fa-plus"></i></div><p class="profile-name text-yellow-400">Crear</p></div>`;
-            g.innerHTML = h || '<p class="text-slate-500">Sin perfiles.</p>';
-            document.getElementById('btnManageProfiles').innerHTML = isAdminMode ? '<i class="fas fa-check"></i> Salir' : '<i class="fas fa-shield-alt"></i> Administrar';
-            document.getElementById('btnManageProfiles').onclick = isAdminMode ? ()=>{isAdminMode=false;renderProfiles()} : requestAdminAccess;
+            const grid = document.getElementById('profilesGrid'); const manageBtn = document.getElementById('btnManageProfiles');
+            let html = profiles.map((p, idx) => {
+                const hasPin = p.pin && p.pin.length > 0; const isNew = !p.pinConfigured;
+                return `<div class="profile-card" onclick="${isAdminMode ? `openEditProfile(${idx})` : `selectProfile(${idx})`}"><div class="profile-avatar avatar-${p.color} ${hasPin ? 'has-lock' : ''} ${isNew && !isAdminMode ? 'new-user' : ''} ${p.isObserver ? 'is-observer' : ''} ${isAdminMode ? 'border-yellow-500 border-2' : ''}">${p.emoji}${isAdminMode ? '<div class="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl"><i class="fas fa-pencil-alt text-yellow-400 text-xl"></i></div>' : ''}</div><p class="profile-name">${p.name}</p></div>`;
+            }).join('');
+            if (isAdminMode && profiles.length < 12) html += `<div class="profile-card add-profile-card" onclick="openEditProfile(-1)"><div class="profile-avatar border-yellow-500 text-yellow-500"><i class="fas fa-plus"></i></div><p class="profile-name text-yellow-400">Crear</p></div>`;
+            if (profiles.length === 0 && !isAdminMode) html = `<div class="text-center py-10 opacity-70"><i class="fas fa-users text-4xl mb-4"></i><p>No hay perfiles.</p></div>`;
+            grid.innerHTML = html; manageBtn.innerHTML = isAdminMode ? '<i class="fas fa-check mr-2"></i>Salir de Admin' : '<i class="fas fa-shield-alt mr-2"></i>Administrar perfiles'; manageBtn.onclick = isAdminMode ? exitAdminMode : requestAdminAccess;
         }
-        function requestAdminAccess() { document.getElementById('adminPinModal').classList.remove('hidden'); clearPin('adminPinContainer'); document.querySelector('#adminPinContainer .pin-digit').focus(); document.getElementById('adminPinError').classList.add('hidden'); setupPinInputs('adminPinContainer', verifyAdminPin); }
-        function closeAdminPinModal() { document.getElementById('adminPinModal').classList.add('hidden'); }
-        function verifyAdminPin() { if(simpleHash(getPin('adminPinContainer'))===adminPin){closeAdminPinModal();isAdminMode=true;renderProfiles();}else{shake('adminPinContainer');document.getElementById('adminPinError').classList.remove('hidden');clearPin('adminPinContainer');} }
-        function selectProfile(i) { pendingProfile=profiles[i]; if(!pendingProfile.pinConfigured) openSetupPin(); else if(pendingProfile.pin) openLoginPin(); else {currentUser=pendingProfile; enterApp();} }
-        
-        // Pin & Profile Modals
-        function openLoginPin() { document.getElementById('pinModal').classList.remove('hidden'); document.getElementById('pinAvatarDisplay').innerText=pendingProfile.emoji; document.getElementById('pinAvatarDisplay').className=`w-24 h-24 mx-auto rounded-xl flex items-center justify-center text-5xl mb-4 avatar-${pendingProfile.color}`; document.getElementById('pinUserTitle').innerText=pendingProfile.name; clearPin('loginPin'); document.querySelector('#loginPin .pin-digit').focus(); setupPinInputs('loginPin', verifyLoginPin); }
-        function closePinModal() { document.getElementById('pinModal').classList.add('hidden'); pendingProfile=null; }
-        function verifyLoginPin() { if(simpleHash(getPin('loginPin'))===pendingProfile.pin){closePinModal();currentUser=pendingProfile;enterApp();}else{shake('loginPin');clearPin('loginPin');} }
-        function openSetupPin() { document.getElementById('setupPinModal').classList.remove('hidden'); document.getElementById('setupPinAvatar').innerText=pendingProfile.emoji; document.getElementById('setupPinAvatar').className=`w-20 h-20 rounded-xl mx-auto mb-4 flex items-center justify-center text-4xl avatar-${pendingProfile.color}`; setupPinInputs('setupPinContainer'); setupPinInputs('confirmPinContainer'); }
-        async function savePersonalPin() { const p1=getPin('setupPinContainer'), p2=getPin('confirmPinContainer'); if(p1.length!==4||p1!==p2) return shake('confirmPinContainer'); const idx=profiles.findIndex(p=>p.id===pendingProfile.id); profiles[idx].pin=simpleHash(p1); profiles[idx].pinConfigured=true; await saveProfiles(); document.getElementById('setupPinModal').classList.add('hidden'); currentUser=profiles[idx]; enterApp(); }
-        async function skipPersonalPin() { const idx=profiles.findIndex(p=>p.id===pendingProfile.id); profiles[idx].pin=null; profiles[idx].pinConfigured=true; await saveProfiles(); document.getElementById('setupPinModal').classList.add('hidden'); currentUser=profiles[idx]; enterApp(); }
-        
-        // Edit Profile
-        function openEdit(i) { const isNew=i===-1; document.getElementById('editProfileModal').classList.remove('hidden'); document.getElementById('editProfileTitle').innerText=isNew?'Nuevo':'Editar'; document.getElementById('editProfileId').value=i; document.getElementById('adminActions').classList.toggle('hidden',isNew); 
-            if(isNew){ document.getElementById('profileNameInput').value=''; selectedEmoji='😀'; selectedColor='violet'; document.getElementById('profileIsObserver').checked=false; }
-            else{ const p=profiles[i]; document.getElementById('profileNameInput').value=p.name; selectedEmoji=p.emoji; selectedColor=p.color; document.getElementById('profileIsObserver').checked=p.isObserver; }
-            renderSelectors();
+        function exitAdminMode() { isAdminMode = false; renderProfiles(); }
+        function selectProfile(index) { const profile = profiles[index]; pendingProfile = profile; if (!profile.pinConfigured) { openSetupPinModal(profile); } else if (profile.pin) { openUserPinModal(profile); } else { currentUser = profile; sessionStorage.setItem('currentUser', JSON.stringify(currentUser)); enterApp(); } }
+
+        function openUserPinModal(p) { document.getElementById('pinModal').classList.remove('hidden'); document.getElementById('pinAvatar').className = `w-24 h-24 rounded-xl mx-auto mb-4 flex items-center justify-center text-4xl avatar-${p.color}`; document.getElementById('pinAvatar').innerText = p.emoji; document.getElementById('pinUserName').innerText = p.name; clearPinContainer('userPinContainer'); document.querySelector('#userPinContainer .pin-digit').focus(); document.getElementById('pinError').classList.add('hidden'); }
+        function closePinModal() { document.getElementById('pinModal').classList.add('hidden'); pendingProfile = null; }
+        function verifyUserPin() { const pin = getPinFromContainer('userPinContainer'); if (simpleHash(pin) === pendingProfile.pin) { closePinModal(); currentUser = pendingProfile; sessionStorage.setItem('currentUser', JSON.stringify(currentUser)); enterApp(); } else { document.getElementById('pinError').classList.remove('hidden'); shakeContainer('userPinContainer'); setTimeout(() => clearPinContainer('userPinContainer'), 500); } }
+        function openSetupPinModal(p) { document.getElementById('setupPinModal').classList.remove('hidden'); document.getElementById('setupPinAvatar').className = `w-20 h-20 rounded-xl mx-auto mb-4 flex items-center justify-center text-4xl avatar-${p.color}`; document.getElementById('setupPinAvatar').innerText = p.emoji; document.getElementById('setupPinUserName').innerText = p.name; clearPinContainer('setupPinContainer'); clearPinContainer('confirmPinContainer'); document.querySelector('#setupPinContainer .pin-digit').focus(); }
+        async function savePersonalPin() { const p1 = getPinFromContainer('setupPinContainer'); const p2 = getPinFromContainer('confirmPinContainer'); if (p1.length !== 4 || p1 !== p2) return shakeContainer('confirmPinContainer'); const idx = profiles.findIndex(p => p.id === pendingProfile.id); if (idx !== -1) { profiles[idx].pin = simpleHash(p1); profiles[idx].pinConfigured = true; await saveProfiles(); currentUser = profiles[idx]; sessionStorage.setItem('currentUser', JSON.stringify(currentUser)); document.getElementById('setupPinModal').classList.add('hidden'); enterApp(); } }
+        async function skipPersonalPin() { const idx = profiles.findIndex(p => p.id === pendingProfile.id); if (idx !== -1) { profiles[idx].pin = null; profiles[idx].pinConfigured = true; await saveProfiles(); currentUser = profiles[idx]; sessionStorage.setItem('currentUser', JSON.stringify(currentUser)); document.getElementById('setupPinModal').classList.add('hidden'); enterApp(); } }
+
+        function setupAllPinInputs() { ['adminPinContainer', 'userPinContainer', 'setupPinContainer', 'confirmPinContainer'].forEach(id => setupPinInputsForContainer(id)); }
+        function setupPinInputsForContainer(id) { const c = document.getElementById(id); if (!c) return; c.querySelectorAll('.pin-digit').forEach((inp, i, arr) => { inp.addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, ''); if (e.target.value) { e.target.classList.add('filled'); if (i < 3) arr[i + 1].focus(); else if (id.includes('admin')) verifyAdminPin(); else if (id === 'userPinContainer') verifyUserPin(); } else e.target.classList.remove('filled'); }); inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !e.target.value && i > 0) arr[i - 1].focus(); }); }); }
+        function getPinFromContainer(id) { return Array.from(document.getElementById(id).querySelectorAll('.pin-digit')).map(i => i.value).join(''); }
+        function clearPinContainer(id) { document.getElementById(id).querySelectorAll('.pin-digit').forEach(i => { i.value = ''; i.classList.remove('filled', 'error'); }); }
+        function shakeContainer(id) { const c = document.getElementById(id); c.querySelectorAll('.pin-digit').forEach(i => i.classList.add('error')); setTimeout(() => c.querySelectorAll('.pin-digit').forEach(i => i.classList.remove('error')), 500); }
+
+        function renderAvatarSelectors() { document.getElementById('emojiSelector').innerHTML = AVATAR_EMOJIS.map(e => `<div class="avatar-option avatar-${selectedColor} ${e === selectedEmoji ? 'selected' : ''}" onclick="selectEmoji('${e}')">${e}</div>`).join(''); document.getElementById('colorSelector').innerHTML = AVATAR_COLORS.map(c => `<div class="color-option avatar-${c} ${c === selectedColor ? 'selected' : ''}" onclick="selectColor('${c}')"></div>`).join(''); updatePreview(); }
+        function selectEmoji(e) { selectedEmoji = e; renderAvatarSelectors(); }
+        function selectColor(c) { selectedColor = c; renderAvatarSelectors(); }
+        function updatePreview() { const p = document.getElementById('previewAvatar'); p.className = `w-20 h-20 rounded-xl mx-auto mb-2 flex items-center justify-center text-4xl avatar-${selectedColor}`; p.innerText = selectedEmoji; }
+        function openEditProfile(index) {
+            const modal = document.getElementById('editProfileModal'); const isNew = index === -1;
+            document.getElementById('editProfileTitle').innerText = isNew ? 'Nuevo Perfil' : 'Editar Perfil'; document.getElementById('editProfileId').value = index; document.getElementById('adminProfileActions').classList.toggle('hidden', isNew);
+            if (isNew) { document.getElementById('profileNameInput').value = ''; selectedEmoji = '😀'; selectedColor = 'violet'; document.getElementById('profileIsObserver').checked = false; }
+            else { const p = profiles[index]; document.getElementById('profileNameInput').value = p.name; selectedEmoji = p.emoji; selectedColor = p.color; document.getElementById('profileIsObserver').checked = p.isObserver || false; }
+            renderAvatarSelectors(); modal.classList.remove('hidden');
         }
         function closeEditProfileModal() { document.getElementById('editProfileModal').classList.add('hidden'); }
-        function renderSelectors() { document.getElementById('emojiSelector').innerHTML=AVATAR_EMOJIS.map(e=>`<div onclick="selectedEmoji='${e}';renderSelectors()" class="avatar-option avatar-${selectedColor} ${e===selectedEmoji?'selected':''}">${e}</div>`).join(''); document.getElementById('colorSelector').innerHTML=AVATAR_COLORS.map(c=>`<div onclick="selectedColor='${c}';renderSelectors()" class="color-option avatar-${c} ${c===selectedColor?'selected':''}"></div>`).join(''); document.getElementById('previewAvatar').className=`w-24 h-24 mx-auto rounded-xl flex items-center justify-center text-5xl mb-2 transition-all avatar-${selectedColor}`; document.getElementById('previewAvatar').innerText=selectedEmoji; }
-        async function saveProfile() { const name=document.getElementById('profileNameInput').value.trim(); if(!name)return; const i=parseInt(document.getElementById('editProfileId').value); const p={name,emoji:selectedEmoji,color:selectedColor,isObserver:document.getElementById('profileIsObserver').checked}; if(i===-1)profiles.push({id:Date.now(),pin:null,pinConfigured:false,...p}); else Object.assign(profiles[i],p); await saveProfiles(); closeEditProfileModal(); renderProfiles(); }
-        async function resetUserPin() { profiles[document.getElementById('editProfileId').value].pin=null; profiles[document.getElementById('editProfileId').value].pinConfigured=false; await saveProfiles(); closeEditProfileModal(); Swal.fire('Listo','PIN eliminado','success'); }
-        async function deleteProfile() { if((await Swal.fire({title:'¿Borrar?',icon:'warning',showCancelButton:true,confirmButtonColor:'#d33',background:'#1e293b',color:'#fff'})).isConfirmed){profiles.splice(document.getElementById('editProfileId').value,1); await saveProfiles(); closeEditProfileModal(); renderProfiles();} }
+        async function saveProfile() {
+            const index = parseInt(document.getElementById('editProfileId').value); const name = document.getElementById('profileNameInput').value.trim(); const isObs = document.getElementById('profileIsObserver').checked;
+            if (!name) return Swal.fire('Error', 'Falta nombre', 'warning');
+            const pObj = { name, emoji: selectedEmoji, color: selectedColor, isObserver: isObs };
+            if (index === -1) { profiles.push({ id: Date.now(), pin: null, pinConfigured: false, createdAt: new Date().toISOString(), ...pObj }); }
+            else { Object.assign(profiles[index], pObj); }
+            await saveProfiles(); closeEditProfileModal(); renderProfiles();
+        }
+        async function resetUserPin() { profiles[document.getElementById('editProfileId').value].pin = null; profiles[document.getElementById('editProfileId').value].pinConfigured = false; await saveProfiles(); closeEditProfileModal(); renderProfiles(); Swal.fire('Listo', 'PIN reseteado', 'success'); }
+        async function deleteProfile() { if ((await Swal.fire({ title: '¿Eliminar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' })).isConfirmed) { profiles.splice(document.getElementById('editProfileId').value, 1); await saveProfiles(); closeEditProfileModal(); renderProfiles(); } }
 
-        // PIN Logic
-        function setupPinInputs(id, cb) { const c=document.getElementById(id); c.querySelectorAll('.pin-digit').forEach((inpt,i,arr)=>{ inpt.value=''; inpt.oninput=e=>{e.target.value=e.target.value.replace(/\D/g,''); if(e.target.value){ e.target.classList.add('filled'); if(i<3)arr[i+1].focus(); else if(cb)cb(); }else e.target.classList.remove('filled'); }; inpt.onkeydown=e=>{if(e.key==='Backspace'&&!e.target.value&&i>0)arr[i-1].focus()}; }); }
-        function getPin(id) { return Array.from(document.getElementById(id).querySelectorAll('.pin-digit')).map(i=>i.value).join(''); }
-        function clearPin(id) { document.getElementById(id).querySelectorAll('.pin-digit').forEach(i=>{i.value='';i.classList.remove('filled','error')}); }
-        function shake(id) { const c=document.getElementById(id); c.querySelectorAll('.pin-digit').forEach(i=>i.classList.add('error')); setTimeout(()=>c.querySelectorAll('.pin-digit').forEach(i=>i.classList.remove('error')),500); }
-
-        // Main App Logic
         async function enterApp() {
             document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden');
             updateCurrentUserBadge(); applyObserverRestrictions();
@@ -404,10 +370,7 @@
         function updateCurrentUserBadge() {
             if (!currentUser) return;
             const av = document.getElementById('currentUserAvatar'); document.getElementById('currentUserName').innerText = currentUser.name;
-            const badge = document.getElementById('currentUserBadge');
-            badge.classList.remove('hidden');
-            av.className = `w-8 h-8 rounded-md flex items-center justify-center text-lg font-bold avatar-${currentUser.color}`;
-            av.innerText = currentUser.emoji;
+            av.className = `w-8 h-8 rounded-lg flex items-center justify-center text-lg avatar-${currentUser.color}`; av.innerText = currentUser.emoji;
         }
         function applyObserverRestrictions() {
             const isObs = currentUser && currentUser.isObserver;
@@ -416,129 +379,144 @@
             document.getElementById('mobRegister').classList.toggle('observer-hidden', isObs);
             document.getElementById('mobSettings').classList.toggle('observer-hidden', isObs);
         }
-        function logout() { Swal.fire({title:'¿Salir?',icon:'question',showCancelButton:true,confirmButtonText:'Sí',cancelButtonText:'No',background:'#1e293b',color:'#fff'}).then(r=>{if(r.isConfirmed){currentUser=null;sessionStorage.removeItem('currentUser');location.reload();}})}
+        function logout() { Swal.fire({ title: '¿Cerrar sesión?', icon: 'question', showCancelButton: true, confirmButtonText: 'Sí', cancelButtonText: 'No', background: '#1e293b', color: '#fff' }).then(res => { if (res.isConfirmed) { currentUser = null; sessionStorage.removeItem('currentUser'); location.reload(); } }); }
+
+        async function loadAllData() {
+            const st = document.getElementById('desktopStatus'); if (st) st.innerText = '● Sincronizando...';
+            try {
+                const { data: cfg } = await sbClient.from('app_config').select('data').eq('key', 'main_config').single();
+                if (cfg) { config = cfg.data; config.players.sort((a, b) => a.nickname.localeCompare(b.nickname)); config.games.sort((a, b) => a.name.localeCompare(b.name)); }
+                const { data: m } = await sbClient.from('matches').select('*').order('played_date', { ascending: false }).order('created_at', { ascending: false });
+                if (m) matches = m;
+                setOnlineStatus(true); updateUI(); renderJusticeModule(); renderSettings();
+            } catch (e) { setOnlineStatus(false); }
+        }
+        async function saveConfigToCloud() { config.players.sort((a, b) => a.nickname.localeCompare(b.nickname)); config.games.sort((a, b) => a.name.localeCompare(b.name)); await sbClient.from('app_config').upsert({ key: 'main_config', data: config }, { onConflict: 'key' }); renderSettings(); }
+        function setupRealtime() { if (mySubscription) sbClient.removeChannel(mySubscription); mySubscription = sbClient.channel('public:all').on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => { loadAllData(); toast('Datos actualizados'); }).on('postgres_changes', { event: '*', schema: 'public', table: 'app_config' }, () => { loadAllData(); loadProfiles(); toast('Configuración actualizada'); }).subscribe(s => { if (s === 'SUBSCRIBED') setOnlineStatus(true); }); }
+        
+        function toast(msg) { Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: msg, showConfirmButton: false, timer: 2000 }); }
+        function setOnlineStatus(online) { const i = document.getElementById('statusIndicator'), d = document.getElementById('desktopStatus'); if (online) { if (i) i.classList.replace('bg-red-500', 'bg-green-500'); if (d) { d.innerText = '● Conectado'; d.className = 'text-[10px] text-green-400'; } } else { if (i) i.classList.replace('bg-green-500', 'bg-red-500'); if (d) { d.innerText = '● Desconectado'; d.className = 'text-[10px] text-red-400'; } } }
         function nav(id) {
-            if(currentUser.isObserver && (id==='register'||id==='settings')) return;
-            document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(b=>{b.classList.remove('active'); if(b.dataset.target===id) b.classList.add('active')});
-            if(id==='register') prepareRegister();
-            if(id==='justice') renderJusticeModule();
-            if(id==='analytics') renderAnalyticsModule();
+            if (currentUser && currentUser.isObserver && (id === 'register' || id === 'settings')) return Swal.fire('Modo Observador', 'Solo lectura.', 'info');
+            document.querySelectorAll('.section').forEach(e => e.classList.remove('active')); document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(e => { e.classList.remove('active'); if (e.dataset.target === id) e.classList.add('active'); });
+            if (id === 'register' && !document.getElementById('editMatchId').value) prepareRegisterForm();
+            if (id === 'justice') renderJusticeModule();
+            if (id === 'analytics') renderAnalyticsModule();
+        }
+        function toggleRanking(t) { const el = document.getElementById(t + 'Ranking'), txt = document.getElementById('toggle' + (t === 'players' ? 'Players' : 'Games') + 'Text'); if (el.classList.contains('expanded')) { el.classList.remove('expanded'); txt.innerText = 'Ver Top 5'; } else { el.classList.add('expanded'); txt.innerText = 'Ocultar'; } }
+        function renderRankings(wins, games) {
+            const sp = Object.entries(wins).sort((a, b) => b[1] - a[1]); document.getElementById('playersRankingList').innerHTML = sp.length ? sp.slice(0, 5).map((p, i) => `<div class="flex justify-between py-2 border-b border-slate-700/50 text-sm"><span>#${i + 1} <b class="text-neon-cyan">${p[0]}</b></span><span>${p[1]} wins</span></div>`).join('') : '<p class="text-xs opacity-50">Sin datos</p>'; if (sp[0]) { document.getElementById('kpiMVPName').innerText = sp[0][0]; document.getElementById('kpiMVPWins').innerText = sp[0][1] + ' wins'; }
+            const sg = Object.entries(games).sort((a, b) => b[1] - a[1]); document.getElementById('gamesRankingList').innerHTML = sg.length ? sg.slice(0, 5).map((g, i) => `<div class="flex justify-between py-2 border-b border-slate-700/50 text-sm"><span>#${i + 1} <b class="text-neon-pink">${g[0]}</b></span><span>${g[1]} partidas</span></div>`).join('') : '<p class="text-xs opacity-50">Sin datos</p>'; if (sg[0]) { document.getElementById('kpiGameName').innerText = sg[0][0]; document.getElementById('kpiGameCount').innerText = sg[0][1] + ' partidas'; }
+        }
+        
+        // --- ANALYTICS ---
+        let chartWinRate;
+        function renderAnalyticsModule() {
+            // Calcular Stats
+            const stats = {};
+            matches.forEach(m => {
+                m.players.forEach(p => {
+                    if(!stats[p]) stats[p] = { played: 0, wins: 0 };
+                    stats[p].played++;
+                    if(p === m.winner) stats[p].wins++;
+                });
+            });
+
+            // Filtrar mínimo 3 partidas y ordenar por %
+            const ranking = Object.keys(stats)
+                .map(p => ({
+                    name: p,
+                    played: stats[p].played,
+                    wins: stats[p].wins,
+                    rate: ((stats[p].wins / stats[p].played) * 100).toFixed(1)
+                }))
+                .filter(p => p.played >= 3)
+                .sort((a, b) => b.rate - a.rate);
+
+            // Render Gráfico
+            const ctx = document.getElementById('chartWinRate');
+            if (chartWinRate) chartWinRate.destroy();
+            
+            const colors = ranking.map(r => r.rate >= 50 ? '#10b981' : (r.rate >= 30 ? '#f59e0b' : '#ef4444'));
+
+            chartWinRate = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ranking.map(r => r.name),
+                    datasets: [{
+                        label: 'Win Rate %',
+                        data: ranking.map(r => r.rate),
+                        backgroundColor: colors,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { max: 100, ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#fff' } } }
+                }
+            });
+
+            // Render Tabla
+            const table = document.getElementById('analyticsTable');
+            if (ranking.length === 0) {
+                table.innerHTML = '<p class="text-center text-slate-500 py-4">Se necesitan mínimo 3 partidas por jugador para calcular estadísticas.</p>';
+            } else {
+                table.innerHTML = ranking.map((r, i) => `
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                        <div class="flex items-center gap-3">
+                            <span class="text-slate-500 text-xs font-mono">#${i+1}</span>
+                            <span class="font-bold text-white">${r.name}</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold ${r.rate >= 50 ? 'text-emerald-400' : (r.rate>=30?'text-amber-400':'text-red-400')}">${r.rate}%</div>
+                            <div class="text-[10px] text-slate-400">${r.wins} wins / ${r.played} games</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
         }
 
-        // --- DASHBOARD & CHARTS ---
+        function renderJusticeModule() {
+            const dMap = {}; matches.forEach(m => { const d = m.played_date || m.created_at.split('T')[0]; if (!dMap[d]) dMap[d] = new Set(); m.players.forEach(p => dMap[d].add(p)); });
+            const uDates = Object.keys(dMap).sort().reverse(); const wall = document.getElementById('wallOfShameCard'); const alert = document.getElementById('dashboardAlert');
+            if (uDates.length < 3) { wall.innerHTML = '<p class="text-center opacity-50 text-sm">Faltan datos (mínimo 3 fechas)</p>'; alert.classList.add('hidden'); }
+            else {
+                const l3 = uDates.slice(0, 3); const off = config.players.filter(p => !dMap[l3[0]].has(p.nickname) && !dMap[l3[1]].has(p.nickname) && !dMap[l3[2]].has(p.nickname)).map(p => p.nickname);
+                if (off.length > 0) { wall.className = 'glass-danger p-6 rounded-2xl animate-pulse'; wall.innerHTML = `<h3 class="text-red-500 font-bold mb-2">💀 WALL OF SHAME</h3><div class="flex flex-wrap gap-2">${off.map(o => `<span class="bg-red-900 text-red-200 px-2 rounded">${o}</span>`).join('')}</div>`; alert.classList.remove('hidden'); }
+                else { wall.className = 'glass-success p-6 rounded-2xl'; wall.innerHTML = '<h3 class="text-emerald-400 font-bold">✨ Zona Segura</h3><p class="text-sm">Nadie tiene 3 faltas seguidas.</p>'; alert.classList.add('hidden'); }
+            }
+            document.getElementById('absenceBoard').innerHTML = uDates.map(d => `<div class="flex justify-between p-2 border-b border-slate-700 text-xs"><span>${new Date(d).toLocaleDateString()}</span><span class="text-slate-400">${config.players.filter(p => !dMap[d].has(p.nickname)).map(p => p.nickname).join(', ') || 'Todos presentes'}</span></div>`).join('');
+        }
         function updateUI() {
             document.getElementById('kpiTotal').innerText = matches.length;
-            const w={}, g={}; matches.forEach(m=>{ w[m.winner]=(w[m.winner]||0)+1; g[m.game]=(g[m.game]||0)+1; });
-            renderRankings(w,g); updateCharts(w,g);
-            renderHistory();
+            if (matches.length) { const w = {}, g = {}; matches.forEach(m => { w[m.winner] = (w[m.winner] || 0) + 1; g[m.game] = (g[m.game] || 0) + 1; }); renderRankings(w, g); updateCharts(w, g); }
+            const isObs = currentUser && currentUser.isObserver;
+            document.getElementById('listHistory').innerHTML = matches.map(m => `<div class="glass p-3 rounded-xl mb-2 flex justify-between border-l-4 border-neon-cyan"><div onclick="showMatchDetails(${m.id})" class="flex-1 cursor-pointer"><div>${new Date(m.played_date || m.created_at).toLocaleDateString()} • ${m.game}</div><div class="font-bold text-white">${m.winner}</div></div>${!isObs ? `<div class="flex gap-2"><button onclick="loadMatchForEdit(${m.id})" class="text-slate-400"><i class="fas fa-edit"></i></button><button onclick="deleteMatch(${m.id}, event)" class="text-red-400"><i class="fas fa-trash"></i></button></div>` : ''}</div>`).join('');
         }
-        function renderRankings(w, g) {
-            const sw = Object.entries(w).sort((a,b)=>b[1]-a[1]); const sg = Object.entries(g).sort((a,b)=>b[1]-a[1]);
-            document.getElementById('playersRankingList').innerHTML = sw.slice(0,5).map((p,i)=>`<div class="flex justify-between border-b border-slate-700 py-1 text-sm"><span>#${i+1} <b class="text-neon-cyan">${p[0]}</b></span><span>${p[1]} wins</span></div>`).join('');
-            if(sw[0]) { document.getElementById('kpiMVPName').innerText=sw[0][0]; document.getElementById('kpiMVPWins').innerText=sw[0][1]+' wins'; }
-            document.getElementById('gamesRankingList').innerHTML = sg.slice(0,5).map((p,i)=>`<div class="flex justify-between border-b border-slate-700 py-1 text-sm"><span>#${i+1} <b class="text-neon-pink">${p[0]}</b></span><span>${p[1]} plays</span></div>`).join('');
-            if(sg[0]) { document.getElementById('kpiGameName').innerText=sg[0][0]; document.getElementById('kpiGameCount').innerText=sg[0][1]+' plays'; }
-        }
-        function toggleRanking(t) { document.getElementById(t+'Ranking').classList.toggle('expanded'); }
-
-        // --- JUSTICE MODULE (RESTAURADO) ---
-        function renderJusticeModule() {
-            const map={}; matches.forEach(m=>{ const d=m.played_date||m.created_at.split('T')[0]; if(!map[d])map[d]=new Set(); m.players.forEach(p=>map[d].add(p)); });
-            const dates = Object.keys(map).sort().reverse();
-            const wall = document.getElementById('wallOfShameCard');
-            const alert = document.getElementById('dashboardAlert');
-            
-            if(dates.length < 3) {
-                wall.className = 'glass p-6 rounded-2xl text-center text-slate-500';
-                wall.innerHTML = 'Se necesitan 3 fechas para calcular sanciones.';
-                alert.classList.add('hidden');
-            } else {
-                const l3 = dates.slice(0,3);
-                const offenders = config.players.filter(p=> !map[l3[0]].has(p.nickname) && !map[l3[1]].has(p.nickname) && !map[l3[2]].has(p.nickname)).map(p=>p.nickname);
-                if(offenders.length > 0) {
-                    wall.className = 'glass-danger p-6 rounded-2xl animate-pulse text-center';
-                    wall.innerHTML = `<h3 class="text-2xl text-red-500 font-gaming mb-4"><i class="fas fa-skull"></i> WALL OF SHAME</h3><div class="flex flex-wrap justify-center gap-3">${offenders.map(o=>`<span class="offender-badge">${o}</span>`).join('')}</div>`;
-                    alert.classList.remove('hidden');
-                } else {
-                    wall.className = 'glass-success p-6 rounded-2xl text-center';
-                    wall.innerHTML = '<h3 class="text-emerald-400 font-gaming text-xl">Zona Segura</h3><p class="text-sm">Nadie tiene 3 faltas consecutivas.</p>';
-                    alert.classList.add('hidden');
-                }
-            }
-            
-            document.getElementById('absenceBoard').innerHTML = dates.map(d => {
-                const absent = config.players.filter(p => !map[d].has(p.nickname)).map(p => p.nickname);
-                const badges = absent.length ? absent.map(a => `<span class="text-[10px] border border-red-500 bg-red-900/50 text-red-300 px-2 py-0.5 rounded shadow-[0_0_5px_red]">${a}</span>`).join(' ') : '<span class="text-emerald-400 text-xs">Asistencia Perfecta</span>';
-                return `<div class="flex justify-between items-center p-3 bg-slate-800/50 rounded border border-slate-700 mb-2">
-                    <div class="text-xs bg-slate-700 px-2 py-1 rounded text-white">${new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</div>
-                    <div class="flex flex-wrap justify-end gap-1 flex-1 ml-4">${badges}</div>
-                </div>`;
-            }).join('');
-        }
-
-        // --- ANALYTICS ---
-        function renderAnalyticsModule() {
-            const s={}; matches.forEach(m=>{ m.players.forEach(p=>{ if(!s[p])s[p]={p:0,w:0}; s[p].p++; if(m.winner===p)s[p].w++; }); });
-            const r = Object.keys(s).map(k=>({n:k, ...s[k], r:((s[k].w/s[k].p)*100).toFixed(1)})).filter(x=>x.p>=3).sort((a,b)=>b.r-a.r);
-            const ctx = document.getElementById('chartWinRate');
-            if(window.myWinChart) window.myWinChart.destroy();
-            window.myWinChart = new Chart(ctx, { type:'bar', data:{labels:r.map(x=>x.n), datasets:[{label:'Win %', data:r.map(x=>x.r), backgroundColor:r.map(x=>x.r>50?'#10b981':(x.r>25?'#f59e0b':'#ef4444')), borderRadius:4}]}, options:{indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{max:100, ticks:{color:'#94a3b8'}}, y:{ticks:{color:'#fff'}}}} });
-            document.getElementById('analyticsTable').innerHTML = r.map((x,i)=>`<div class="flex justify-between p-3 bg-slate-800 rounded border border-slate-700"><div><span class="text-slate-500 mr-2">#${i+1}</span><span class="font-bold">${x.n}</span></div><div class="text-right"><div class="${x.r>50?'text-emerald-400':(x.r>25?'text-amber-400':'text-red-400')} font-bold">${x.r}%</div><div class="text-[10px] text-slate-500">${x.w}/${x.p} wins</div></div></div>`).join('');
-        }
-
-        // --- REGISTER & HISTORY ---
-        function prepareRegister() {
-            document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('inputNotes').value = '';
-            document.getElementById('inputGame').innerHTML = '<option>Selecciona...</option>' + config.games.map(g => `<option value="${g.name}" data-type="${g.type}">${g.name}</option>`).join('');
-            document.getElementById('gridPlayers').innerHTML = config.players.map(p => `<div onclick="toggleP('${p.nickname}',this)" class="cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded text-center text-xs select-none text-slate-400">${p.nickname}</div>`).join('');
-            activePlayers = []; updateGameMode();
-        }
-        function toggleP(n,el) {
-            if(activePlayers.includes(n)) { activePlayers=activePlayers.filter(x=>x!==n); el.className="cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded text-center text-xs select-none text-slate-400"; }
-            else { activePlayers.push(n); el.className="cursor-pointer bg-neon-violet text-white p-2 rounded text-center text-xs font-bold shadow-[0_0_10px_#a855f7]"; }
-            updateGameMode();
-        }
-        function updateGameMode() {
-            const t = document.getElementById('inputGame').selectedOptions[0]?.dataset.type || 'direct';
-            const sc = document.getElementById('sectionScores'); const ws = document.getElementById('inputWinner');
-            if(t==='score') { sc.classList.remove('hidden'); ws.disabled=true; ws.innerHTML='<option>Auto</option>'; document.getElementById('gridScores').innerHTML=activePlayers.map(p=>`<div class="bg-slate-900 p-2 rounded"><div class="text-xs text-slate-400">${p}</div><input type="number" data-p="${p}" class="sc-inp w-full bg-transparent text-center font-bold text-white" oninput="calcW()"></div>`).join(''); }
-            else { sc.classList.add('hidden'); ws.disabled=false; ws.innerHTML='<option>Ganador...</option>'+activePlayers.map(p=>`<option value="${p}">${p}</option>`).join(''); }
-        }
-        function calcW() { let m=-999,w=null; document.querySelectorAll('.sc-inp').forEach(i=>{const v=parseInt(i.value)||0; if(v>m){m=v;w=i.dataset.p}}); if(w)document.getElementById('inputWinner').innerHTML=`<option value="${w}" selected>🏆 ${w} (${m})</option>`; }
-        async function submitMatch() {
-            const g=document.getElementById('inputGame').value, w=document.getElementById('inputWinner').value, n=document.getElementById('inputNotes').value, d=document.getElementById('inputDate').value, eid=document.getElementById('editMatchId').value;
-            let sc={}; document.querySelectorAll('.sc-inp').forEach(i=>sc[i.dataset.p]=parseInt(i.value)||0);
-            if(!g||!w||activePlayers.length<1) return Swal.fire('Faltan datos','','warning');
-            const pl={game:g,winner:w,players:activePlayers,notes:n,scores:Object.keys(sc).length?sc:null,played_date:d};
-            if(eid) await sbClient.from('matches').update(pl).eq('id',eid); else await sbClient.from('matches').insert([pl]);
-            cancelEditMatch(); nav('dashboard'); Swal.fire({icon:'success',title:'Guardado',timer:1000,showConfirmButton:false});
-        }
-        function renderHistory() {
-            const isObs = currentUser.isObserver;
-            document.getElementById('listHistory').innerHTML = matches.map(m => `<div class="glass p-3 rounded-xl mb-2 flex justify-between border-l-4 border-neon-cyan"><div onclick="showDetail(${m.id})" class="flex-1 cursor-pointer"><div>${new Date(m.played_date||m.created_at).toLocaleDateString()} • ${m.game}</div><div class="font-bold text-white">${m.winner}</div></div>${!isObs?`<div class="flex gap-2"><button onclick="loadEdit(${m.id})" class="text-slate-400"><i class="fas fa-edit"></i></button><button onclick="delMatch(${m.id},event)" class="text-red-400"><i class="fas fa-trash"></i></button></div>`:''}</div>`).join('');
-        }
-        function showDetail(id) { const m=matches.find(x=>x.id===id); if(!m)return; Swal.fire({title:m.game, html:m.players.map(p=>`<div class="flex justify-between border-b border-slate-700 p-2"><span>${p===m.winner?'👑':''} ${p}</span><span>${m.scores?m.scores[p]:'-'}</span></div>`).join('')+(m.notes?`<p class="mt-4 text-xs italic">"${m.notes}"</p>`:''), background:'#1e293b', color:'#fff'}); }
-        function loadEdit(id) { const m=matches.find(x=>x.id===id); if(!m)return; document.getElementById('editMatchId').value=id; document.getElementById('editModeBanner').classList.remove('hidden'); document.getElementById('registerTitle').innerText='Editar'; document.getElementById('btnSubmitMatch').innerText='ACTUALIZAR'; prepareRegister(); document.getElementById('inputDate').value=m.played_date; document.getElementById('inputGame').value=m.game; document.getElementById('inputNotes').value=m.notes; activePlayers=[...m.players]; document.querySelectorAll('#gridPlayers > div').forEach(el=>{if(activePlayers.includes(el.innerText))el.click()}); updateGameMode(); nav('register'); }
-        function cancelEditMatch() { document.getElementById('editMatchId').value=''; document.getElementById('editModeBanner').classList.add('hidden'); document.getElementById('registerTitle').innerText='Nueva Partida'; document.getElementById('btnSubmitMatch').innerText='GUARDAR'; prepareRegister(); }
-        async function delMatch(id,e) { e.stopPropagation(); if((await Swal.fire({title:'¿Borrar?',icon:'warning',showCancelButton:true,confirmButtonColor:'#d33',background:'#1e293b',color:'#fff'})).isConfirmed) await sbClient.from('matches').delete().eq('id',id); }
-
-        // Settings
-        function renderSettings() { document.getElementById('listPlayers').innerHTML=config.players.map((p,i)=>`<div class="flex justify-between bg-slate-800 p-2 rounded mb-1 text-xs"><span>${p.nickname}</span><div><i onclick="loadP(${i})" class="fas fa-edit mr-2 cursor-pointer"></i><i onclick="remP(${i})" class="fas fa-trash text-red-400 cursor-pointer"></i></div></div>`).join(''); document.getElementById('listGames').innerHTML=config.games.map((g,i)=>`<div class="flex justify-between bg-slate-800 p-2 rounded mb-1 text-xs"><span>${g.name}</span><div><i onclick="loadG(${i})" class="fas fa-edit mr-2 cursor-pointer"></i><i onclick="remG(${i})" class="fas fa-trash text-red-400 cursor-pointer"></i></div></div>`).join(''); }
-        function savePlayer() { const n=document.getElementById('playerNick').value, r=document.getElementById('playerReal').value, i=parseInt(document.getElementById('editPlayerIndex').value); if(!n)return; if(i===-1)config.players.push({nickname:n,realName:r}); else {config.players[i].nickname=n;config.players[i].realName=r;} cancelP(); saveConfig(); }
-        function loadP(i) { const p=config.players[i]; document.getElementById('playerNick').value=p.nickname; document.getElementById('playerReal').value=p.realName; document.getElementById('editPlayerIndex').value=i; document.getElementById('btnSavePlayer').innerText='ACTUALIZAR'; document.getElementById('btnCancelEditPlayer').classList.remove('hidden'); }
-        function cancelP() { document.getElementById('playerNick').value=''; document.getElementById('playerReal').value=''; document.getElementById('editPlayerIndex').value=-1; document.getElementById('btnSavePlayer').innerText='AGREGAR'; document.getElementById('btnCancelEditPlayer').classList.add('hidden'); }
-        function remP(i) { config.players.splice(i,1); saveConfig(); }
-        function setGameType(t) { selectedGameType=t; document.getElementById('btnTypeDirect').className=t==='direct'?'flex-1 text-xs py-2 border rounded font-bold border-neon-cyan text-neon-cyan':'flex-1 text-xs py-2 border rounded border-slate-600 text-slate-400'; document.getElementById('btnTypeScore').className=t==='score'?'flex-1 text-xs py-2 border rounded font-bold border-neon-pink text-neon-pink':'flex-1 text-xs py-2 border rounded border-slate-600 text-slate-400'; }
-        function saveGame() { const n=document.getElementById('newGameName').value, i=parseInt(document.getElementById('editGameIndex').value); if(!n)return; if(i===-1)config.games.push({name:n,type:selectedGameType}); else {config.games[i].name=n;config.games[i].type=selectedGameType;} cancelG(); saveConfig(); }
-        function loadG(i) { const g=config.games[i]; document.getElementById('newGameName').value=g.name; setGameType(g.type); document.getElementById('editGameIndex').value=i; document.getElementById('btnSaveGame').innerText='ACTUALIZAR'; document.getElementById('btnCancelEditGame').classList.remove('hidden'); }
-        function cancelG() { document.getElementById('newGameName').value=''; setGameType('direct'); document.getElementById('editGameIndex').value=-1; document.getElementById('btnSaveGame').innerText='AGREGAR'; document.getElementById('btnCancelEditGame').classList.add('hidden'); }
-        function remG(i) { config.games.splice(i,1); saveConfig(); }
-
-        let chartWins, chartGames;
-        function initCharts() { Chart.defaults.color='#64748b'; Chart.defaults.borderColor='#334155'; chartWins=new Chart(document.getElementById('chartWins'),{type:'doughnut',data:{labels:[],datasets:[{data:[],backgroundColor:['#a855f7','#22d3ee','#ec4899','#f59e0b','#10b981'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10}}}}}); chartGames=new Chart(document.getElementById('chartGames'),{type:'bar',data:{labels:[],datasets:[{label:'Partidas',data:[],backgroundColor:'#3b82f6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}}}}}); }
-        function updateCharts(w,g) { chartWins.data.labels=Object.keys(w); chartWins.data.datasets[0].data=Object.values(w); chartWins.update(); chartGames.data.labels=Object.keys(g); chartGames.data.datasets[0].data=Object.values(g); chartGames.update(); }
+        function showMatchDetails(id) { const m = matches.find(x => x.id === id); if (!m) return; Swal.fire({ title: m.game, html: m.players.map(p => `<div class="flex justify-between p-2 border-b border-slate-700"><span>${p === m.winner ? '👑' : ''} ${p}</span><span>${m.scores ? m.scores[p] : '-'}</span></div>`).join('') + (m.notes ? `<p class="mt-4 text-xs italic">"${m.notes}"</p>` : ''), background: '#1e293b', color: '#fff' }); }
+        function loadMatchForEdit(id) { const m = matches.find(x => x.id === id); if (!m) return; document.getElementById('editMatchId').value = id; document.getElementById('editModeBanner').classList.remove('hidden'); document.getElementById('registerTitle').innerText = 'Editar'; document.getElementById('btnSubmitMatch').innerText = 'ACTUALIZAR'; prepareRegisterForm(); document.getElementById('inputDate').value = m.played_date; document.getElementById('inputGame').value = m.game; document.getElementById('inputNotes').value = m.notes; activePlayers = [...m.players]; document.querySelectorAll('#gridPlayers > div').forEach(el => { if (activePlayers.includes(el.innerText)) el.className = "cursor-pointer bg-neon-violet text-white p-2 rounded-lg text-center text-xs font-bold shadow-[0_0_10px_#a855f7]"; }); updateGameMode(); nav('register'); }
+        function cancelEditMatch() { document.getElementById('editMatchId').value = ''; document.getElementById('editModeBanner').classList.add('hidden'); document.getElementById('registerTitle').innerText = 'Nueva Partida'; document.getElementById('btnSubmitMatch').innerText = 'GUARDAR PARTIDA'; prepareRegisterForm(); }
+        async function deleteMatch(id, e) { e.stopPropagation(); if ((await Swal.fire({ title: '¿Borrar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', background: '#1e293b', color: '#fff' })).isConfirmed) { await sbClient.from('matches').delete().eq('id', id); } }
+        function prepareRegisterForm() { document.getElementById('inputDate').value = new Date().toISOString().split('T')[0]; document.getElementById('inputNotes').value = ''; document.getElementById('inputGame').innerHTML = '<option>Selecciona...</option>' + config.games.map(g => `<option value="${g.name}" data-type="${g.type}">${g.name}</option>`).join(''); document.getElementById('gridPlayers').innerHTML = config.players.map(p => `<div onclick="togglePlayer('${p.nickname}',this)" class="cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded-lg text-center text-xs text-slate-300 select-none">${p.nickname}</div>`).join(''); activePlayers = []; updateGameMode(); }
+        function togglePlayer(n, e) { if (activePlayers.includes(n)) { activePlayers = activePlayers.filter(x => x !== n); e.className = "cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded-lg text-center text-xs text-slate-300 select-none"; } else { activePlayers.push(n); e.className = "cursor-pointer bg-neon-violet text-white p-2 rounded-lg text-center text-xs font-bold shadow-[0_0_10px_#a855f7]"; } updateGameMode(); }
+        function updateGameMode() { const t = document.getElementById('inputGame').options[document.getElementById('inputGame').selectedIndex]?.dataset.type || 'direct'; const sc = document.getElementById('sectionScores'); const ws = document.getElementById('inputWinner'); if (t === 'score') { sc.classList.remove('hidden'); ws.disabled = true; ws.innerHTML = '<option>Auto</option>'; document.getElementById('gridScores').innerHTML = activePlayers.map(p => `<div class="bg-slate-900 p-2 rounded"><div class="text-xs text-slate-400">${p}</div><input type="number" data-player="${p}" class="score-input w-full bg-transparent text-center font-bold text-white" placeholder="0" oninput="calcWinner()"></div>`).join(''); } else { sc.classList.add('hidden'); ws.disabled = false; ws.innerHTML = '<option>Ganador...</option>' + activePlayers.map(p => `<option value="${p}">${p}</option>`).join(''); } }
+        function calcWinner() { let max = -999, w = null; document.querySelectorAll('.score-input').forEach(i => { const v = parseInt(i.value) || 0; if (v > max) { max = v; w = i.dataset.player; } }); if (w) document.getElementById('inputWinner').innerHTML = `<option value="${w}" selected>🏆 ${w} (${max})</option>`; }
+        async function submitMatch() { const g = document.getElementById('inputGame').value, w = document.getElementById('inputWinner').value, n = document.getElementById('inputNotes').value, d = document.getElementById('inputDate').value, eid = document.getElementById('editMatchId').value; let sc = {}; document.querySelectorAll('.score-input').forEach(i => sc[i.dataset.player] = parseInt(i.value) || 0); if (!g || !w || activePlayers.length < 1) return Swal.fire('Faltan datos', '', 'warning'); const pl = { game: g, winner: w, players: activePlayers, notes: n, scores: Object.keys(sc).length ? sc : null, played_date: d }; if (eid) await sbClient.from('matches').update(pl).eq('id', eid); else await sbClient.from('matches').insert([pl]); cancelEditMatch(); nav('dashboard'); Swal.fire({ icon: 'success', title: 'Guardado', timer: 1000, showConfirmButton: false }); }
+        function renderSettings() { document.getElementById('listPlayers').innerHTML = config.players.map((p, i) => `<div class="flex justify-between bg-slate-700 p-2 rounded mb-2 text-xs"><span>${p.nickname}</span><div><i onclick="loadPlayerForEdit(${i})" class="fas fa-edit mr-2 cursor-pointer"></i><i onclick="removePlayer(${i})" class="fas fa-trash text-red-400 cursor-pointer"></i></div></div>`).join(''); document.getElementById('listGames').innerHTML = config.games.map((g, i) => `<div class="flex justify-between bg-slate-800 p-2 rounded mb-2 text-xs"><span>${g.name}</span><div><i onclick="loadGameForEdit(${i})" class="fas fa-edit mr-2 cursor-pointer"></i><i onclick="removeGame(${i})" class="fas fa-trash text-red-400 cursor-pointer"></i></div></div>`).join(''); }
+        function savePlayer() { const n = document.getElementById('playerNick').value, r = document.getElementById('playerReal').value, i = parseInt(document.getElementById('editPlayerIndex').value); if (!n) return; if (i === -1) config.players.push({ nickname: n, realName: r }); else { config.players[i].nickname = n; config.players[i].realName = r; } cancelEditPlayer(); saveConfigToCloud(); }
+        function loadPlayerForEdit(i) { const p = config.players[i]; document.getElementById('playerNick').value = p.nickname; document.getElementById('playerReal').value = p.realName; document.getElementById('editPlayerIndex').value = i; document.getElementById('btnSavePlayer').innerText = 'Actualizar'; document.getElementById('btnCancelEditPlayer').classList.remove('hidden'); }
+        function cancelEditPlayer() { document.getElementById('playerNick').value = ''; document.getElementById('playerReal').value = ''; document.getElementById('editPlayerIndex').value = -1; document.getElementById('btnSavePlayer').innerText = 'Agregar'; document.getElementById('btnCancelEditPlayer').classList.add('hidden'); }
+        function removePlayer(i) { config.players.splice(i, 1); saveConfigToCloud(); }
+        function setGameType(t) { selectedGameType = t; document.getElementById('btnTypeDirect').className = t === 'direct' ? 'flex-1 py-2 rounded font-bold border-2 border-neon-cyan text-neon-cyan' : 'flex-1 py-2 rounded border border-slate-600 text-slate-400'; document.getElementById('btnTypeScore').className = t === 'score' ? 'flex-1 py-2 rounded font-bold border-2 border-neon-pink text-neon-pink' : 'flex-1 py-2 rounded border border-slate-600 text-slate-400'; }
+        function saveGame() { const n = document.getElementById('newGameName').value, i = parseInt(document.getElementById('editGameIndex').value); if (!n) return; if (i === -1) config.games.push({ name: n, type: selectedGameType }); else { config.games[i].name = n; config.games[i].type = selectedGameType; } cancelEditGame(); saveConfigToCloud(); }
+        function loadGameForEdit(i) { const g = config.games[i]; document.getElementById('newGameName').value = g.name; setGameType(g.type); document.getElementById('editGameIndex').value = i; document.getElementById('btnSaveGame').innerText = 'Actualizar'; document.getElementById('btnCancelEditGame').classList.remove('hidden'); }
+        function cancelEditGame() { document.getElementById('newGameName').value = ''; setGameType('direct'); document.getElementById('editGameIndex').value = -1; document.getElementById('btnSaveGame').innerText = 'Agregar'; document.getElementById('btnCancelEditGame').classList.add('hidden'); }
+        function removeGame(i) { config.games.splice(i, 1); saveConfigToCloud(); }
+        let chartWins, chartGames; function initCharts() { Chart.defaults.color = '#64748b'; Chart.defaults.borderColor = '#334155'; chartWins = new Chart(document.getElementById('chartWins'), { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#a855f7', '#22d3ee', '#ec4899', '#f59e0b', '#10b981'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } } } }); chartGames = new Chart(document.getElementById('chartGames'), { type: 'bar', data: { labels: [], datasets: [{ label: 'Partidas', data: [], backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } } }); } function updateCharts(w, g) { chartWins.data.labels = Object.keys(w); chartWins.data.datasets[0].data = Object.values(w); chartWins.update(); chartGames.data.labels = Object.keys(g); chartGames.data.datasets[0].data = Object.values(g); chartGames.update(); }
     </script>
 </body>
 </html>
