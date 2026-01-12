@@ -12,23 +12,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { 'gaming': ['Orbitron', 'sans-serif'], 'body': ['Inter', 'sans-serif'] },
-                    colors: {
-                        'neon-violet': '#a855f7', 'neon-cyan': '#22d3ee', 'neon-pink': '#ec4899', 'neon-red': '#ef4444', 'dark-bg': '#0f172a'
-                    }
-                }
-            }
-        }
+        tailwind.config = { theme: { extend: { fontFamily: { 'gaming': ['Orbitron', 'sans-serif'], 'body': ['Inter', 'sans-serif'] }, colors: { 'neon-violet': '#a855f7', 'neon-cyan': '#22d3ee', 'neon-pink': '#ec4899', 'neon-red': '#ef4444', 'dark-bg': '#0f172a' } } } }
     </script>
     
     <style>
         body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; overflow-x: hidden; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
         
-        /* ESTILOS DE JUSTICIA (NEÓN ROJO) */
+        /* --- ESTILOS DE JUSTICIA (ROJO NEÓN) --- */
         .glass-danger { 
             background: rgba(69, 10, 10, 0.8); 
             backdrop-filter: blur(12px); 
@@ -327,10 +318,10 @@
 
         // Data & Sync (CORREGIDO)
         async function loadAllData() {
-            const d=document.getElementById('desktopStatus'); if(d)d.innerText='● Sincronizando...';
+            const st = document.getElementById('desktopStatus'); if (st) st.innerText = '● Sincronizando...';
             try {
-                const { data: c } = await sbClient.from('app_config').select('data').eq('key', 'main_config').single();
-                if(c) { config = c.data; config.players.sort((a,b)=>a.nickname.localeCompare(b.nickname)); config.games.sort((a,b)=>a.name.localeCompare(b.name)); }
+                const { data: cfg } = await sbClient.from('app_config').select('data').eq('key', 'main_config').single();
+                if (cfg) { config = cfg.data; config.players.sort((a,b)=>a.nickname.localeCompare(b.nickname)); config.games.sort((a,b)=>a.name.localeCompare(b.name)); }
                 const { data: m } = await sbClient.from('matches').select('*').order('played_date',{ascending:false});
                 if(m) matches = m;
                 setOnlineStatus(true); updateUI(); renderJusticeModule(); renderSettings(); renderAnalyticsModule();
@@ -395,7 +386,7 @@
         function closeEditProfileModal() { document.getElementById('editProfileModal').classList.add('hidden'); }
         function renderSelectors() { document.getElementById('emojiSelector').innerHTML=AVATAR_EMOJIS.map(e=>`<div onclick="selectedEmoji='${e}';renderSelectors()" class="avatar-option avatar-${selectedColor} ${e===selectedEmoji?'selected':''}">${e}</div>`).join(''); document.getElementById('colorSelector').innerHTML=AVATAR_COLORS.map(c=>`<div onclick="selectedColor='${c}';renderSelectors()" class="color-option avatar-${c} ${c===selectedColor?'selected':''}"></div>`).join(''); document.getElementById('previewAvatar').className=`w-24 h-24 mx-auto rounded-xl flex items-center justify-center text-5xl mb-2 transition-all avatar-${selectedColor}`; document.getElementById('previewAvatar').innerText=selectedEmoji; }
         async function saveProfile() { const name=document.getElementById('profileNameInput').value.trim(); if(!name)return; const i=parseInt(document.getElementById('editProfileId').value); const p={name,emoji:selectedEmoji,color:selectedColor,isObserver:document.getElementById('profileIsObserver').checked}; if(i===-1)profiles.push({id:Date.now(),pin:null,pinConfigured:false,...p}); else Object.assign(profiles[i],p); await saveProfiles(); closeEditProfileModal(); renderProfiles(); }
-        async function resetUserPin() { profiles[document.getElementById('editProfileId').value].pin=null; profiles[document.getElementById('editProfileId').value].pinConfigured=false; await saveProfiles(); closeEditProfileModal(); renderProfiles(); Swal.fire('Listo','PIN eliminado','success'); }
+        async function resetUserPin() { profiles[document.getElementById('editProfileId').value].pin=null; profiles[document.getElementById('editProfileId').value].pinConfigured=false; await saveProfiles(); closeEditProfileModal(); Swal.fire('Listo','PIN eliminado','success'); }
         async function deleteProfile() { if((await Swal.fire({title:'¿Borrar?',icon:'warning',showCancelButton:true,confirmButtonColor:'#d33',background:'#1e293b',color:'#fff'})).isConfirmed){profiles.splice(document.getElementById('editProfileId').value,1); await saveProfiles(); closeEditProfileModal(); renderProfiles();} }
 
         // PIN Logic
