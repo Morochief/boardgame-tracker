@@ -1122,9 +1122,8 @@
                             class="block text-xs text-slate-400 mb-2 uppercase font-bold">Puntajes</label>
                         <div id="gridScores" class="grid grid-cols-2 gap-3"></div>
                     </div>
-                    <div class="mb-5"><label
-                            class="block text-xs text-slate-400 mb-2 uppercase font-bold">Ganador</label><select
-                            id="inputWinner"
+                    <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Ganador <span
+                                class="text-slate-500">(opcional al iniciar)</span></label><select id="inputWinner"
                             class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white disabled:opacity-50"
                             disabled>
                             <option value="">Selecciona jugadores...</option>
@@ -1134,9 +1133,29 @@
                             id="inputNotes"
                             class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white text-sm"
                             rows="2" placeholder="Comentarios..."></textarea></div>
-                    <button id="btnSubmitMatch" onclick="submitMatch()"
-                        class="w-full py-4 bg-gradient-to-r from-neon-violet to-neon-cyan rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform"><i
-                            class="fas fa-save mr-2"></i>GUARDAR PARTIDA</button>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="btnStartMatch" onclick="startPendingMatch()"
+                            class="py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-bold text-white hover:opacity-90 transition-opacity">
+                            <i class="fas fa-play mr-2"></i>INICIAR PARTIDA
+                        </button>
+                        <button id="btnSubmitMatch" onclick="submitMatch()"
+                            class="py-4 bg-gradient-to-r from-neon-violet to-neon-cyan rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform">
+                            <i class="fas fa-trophy mr-2"></i>CON GANADOR
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3 text-center">
+                        <i class="fas fa-info-circle"></i> "Iniciar Partida" permite que otros voten predicciones antes
+                        de definir ganador.
+                    </p>
+                </div>
+
+                <!-- Pending Matches -->
+                <div id="pendingMatchesSection" class="mt-6">
+                    <h3 class="font-bold text-slate-300 mb-4 flex items-center gap-2">
+                        <i class="fas fa-hourglass-half text-yellow-500 animate-pulse"></i> Partidas en Curso
+                    </h3>
+                    <div id="pendingMatchesList" class="space-y-3"></div>
                 </div>
             </section>
 
@@ -1843,10 +1862,66 @@
         function cancelEditMatch() { document.getElementById('editMatchId').value = ''; document.getElementById('editModeBanner').classList.add('hidden'); document.getElementById('registerTitle').innerText = 'Nueva Partida'; document.getElementById('btnSubmitMatch').innerText = 'GUARDAR PARTIDA'; prepareRegisterForm(); }
         async function deleteMatch(id, e) { e.stopPropagation(); if ((await Swal.fire({ title: '¿Borrar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', background: '#1e293b', color: '#fff' })).isConfirmed) { await sbClient.from('matches').delete().eq('id', id); } }
         function prepareRegisterForm() { document.getElementById('inputDate').value = new Date().toISOString().split('T')[0]; document.getElementById('inputNotes').value = ''; document.getElementById('inputGame').innerHTML = '<option>Selecciona...</option>' + config.games.map(g => `<option value="${g.name}" data-type="${g.type}">${g.name}</option>`).join(''); document.getElementById('gridPlayers').innerHTML = config.players.map(p => `<div onclick="togglePlayer('${p.nickname}',this)" class="cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded-lg text-center text-xs text-slate-300 select-none">${p.nickname}</div>`).join(''); activePlayers = []; updateGameMode(); }
-        function togglePlayer(n, e) { if (activePlayers.includes(n)) { activePlayers = activePlayers.filter(x => x !== n); e.className = "cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded-lg text-center text-xs text-slate-300 select-none"; } else { activePlayers.push(n); e.className = "cursor-pointer bg-neon-violet text-white p-2 rounded-lg text-center text-xs font-bold shadow-[0_0_10px_#a855f7]"; } updateGameMode(); }
-        function updateGameMode() { const t = document.getElementById('inputGame').options[document.getElementById('inputGame').selectedIndex]?.dataset.type || 'direct'; const sc = document.getElementById('sectionScores'); const ws = document.getElementById('inputWinner'); if (t === 'score') { sc.classList.remove('hidden'); ws.disabled = true; ws.innerHTML = '<option>Auto</option>'; document.getElementById('gridScores').innerHTML = activePlayers.map(p => `<div class="bg-slate-900 p-2 rounded"><div class="text-xs text-slate-400">${p}</div><input type="number" data-player="${p}" class="score-input w-full bg-transparent text-center font-bold text-white" placeholder="0" oninput="calcWinner()"></div>`).join(''); } else { sc.classList.add('hidden'); ws.disabled = false; ws.innerHTML = '<option>Ganador...</option>' + activePlayers.map(p => `<option value="${p}">${p}</option>`).join(''); } }
+        function togglePlayer(n, e) {
+            if (activePlayers.includes(n)) {
+                activePlayers = activePlayers.filter(x => x !== n);
+                e.className = "cursor-pointer bg-slate-800 border border-slate-600 p-2 rounded-lg text-center text-xs text-slate-300 select-none";
+            } else {
+                activePlayers.push(n);
+                e.className = "cursor-pointer bg-neon-violet text-white p-2 rounded-lg text-center text-xs font-bold shadow-[0_0_10px_#a855f7]";
+            }
+            updateGameMode();
+
+            // Start prediction when 2+ players selected
+            const game = document.getElementById('inputGame').value;
+            if (activePlayers.length >= 2 && game && game !== 'Selecciona...') {
+                startPrediction(game, [...activePlayers]);
+            }
+        }
+        function updateGameMode() {
+            const t = document.getElementById('inputGame').options[document.getElementById('inputGame').selectedIndex]?.dataset.type || 'direct';
+            const sc = document.getElementById('sectionScores');
+            const ws = document.getElementById('inputWinner');
+            if (t === 'score') {
+                sc.classList.remove('hidden');
+                ws.disabled = true;
+                ws.innerHTML = '<option>Auto</option>';
+                document.getElementById('gridScores').innerHTML = activePlayers.map(p => `<div class="bg-slate-900 p-2 rounded"><div class="text-xs text-slate-400">${p}</div><input type="number" data-player="${p}" class="score-input w-full bg-transparent text-center font-bold text-white" placeholder="0" oninput="calcWinner()"></div>`).join('');
+            } else {
+                sc.classList.add('hidden');
+                ws.disabled = false;
+                ws.innerHTML = '<option>Ganador...</option>' + activePlayers.map(p => `<option value="${p}">${p}</option>`).join('');
+            }
+
+            // Update prediction when game changes
+            const game = document.getElementById('inputGame').value;
+            if (activePlayers.length >= 2 && game && game !== 'Selecciona...') {
+                startPrediction(game, [...activePlayers]);
+            }
+        }
         function calcWinner() { let max = -999, w = null; document.querySelectorAll('.score-input').forEach(i => { const v = parseInt(i.value) || 0; if (v > max) { max = v; w = i.dataset.player; } }); if (w) document.getElementById('inputWinner').innerHTML = `<option value="${w}" selected>🏆 ${w} (${max})</option>`; }
-        async function submitMatch() { const g = document.getElementById('inputGame').value, w = document.getElementById('inputWinner').value, n = document.getElementById('inputNotes').value, d = document.getElementById('inputDate').value, eid = document.getElementById('editMatchId').value; let sc = {}; document.querySelectorAll('.score-input').forEach(i => sc[i.dataset.player] = parseInt(i.value) || 0); if (!g || !w || activePlayers.length < 1) return Swal.fire('Faltan datos', '', 'warning'); const pl = { game: g, winner: w, players: activePlayers, notes: n, scores: Object.keys(sc).length ? sc : null, played_date: d }; if (eid) await sbClient.from('matches').update(pl).eq('id', eid); else await sbClient.from('matches').insert([pl]); cancelEditMatch(); nav('dashboard'); Swal.fire({ icon: 'success', title: 'Guardado', timer: 1000, showConfirmButton: false }); }
+        async function submitMatch() {
+            const g = document.getElementById('inputGame').value,
+                w = document.getElementById('inputWinner').value,
+                n = document.getElementById('inputNotes').value,
+                d = document.getElementById('inputDate').value,
+                eid = document.getElementById('editMatchId').value;
+            let sc = {};
+            document.querySelectorAll('.score-input').forEach(i => sc[i.dataset.player] = parseInt(i.value) || 0);
+            if (!g || !w || activePlayers.length < 1) return Swal.fire('Faltan datos', '', 'warning');
+
+            const pl = { game: g, winner: w, players: activePlayers, notes: n, scores: Object.keys(sc).length ? sc : null, played_date: d };
+
+            if (eid) await sbClient.from('matches').update(pl).eq('id', eid);
+            else await sbClient.from('matches').insert([pl]);
+
+            // Close prediction with actual winner
+            closePrediction(w);
+
+            cancelEditMatch();
+            nav('dashboard');
+            Swal.fire({ icon: 'success', title: 'Guardado', timer: 1000, showConfirmButton: false });
+        }
         function renderSettings() { document.getElementById('listPlayers').innerHTML = config.players.map((p, i) => `<div class="flex justify-between bg-slate-700 p-2 rounded mb-2 text-xs"><span>${p.nickname}</span><div><i onclick="loadPlayerForEdit(${i})" class="fas fa-edit mr-2 cursor-pointer"></i><i onclick="removePlayer(${i})" class="fas fa-trash text-red-400 cursor-pointer"></i></div></div>`).join(''); document.getElementById('listGames').innerHTML = config.games.map((g, i) => `<div class="flex justify-between bg-slate-800 p-2 rounded mb-2 text-xs"><span>${g.name}</span><div><i onclick="loadGameForEdit(${i})" class="fas fa-edit mr-2 cursor-pointer"></i><i onclick="removeGame(${i})" class="fas fa-trash text-red-400 cursor-pointer"></i></div></div>`).join(''); }
         function savePlayer() { const n = document.getElementById('playerNick').value, r = document.getElementById('playerReal').value, i = parseInt(document.getElementById('editPlayerIndex').value); if (!n) return; if (i === -1) config.players.push({ nickname: n, realName: r }); else { config.players[i].nickname = n; config.players[i].realName = r; } cancelEditPlayer(); saveConfigToCloud(); }
         function loadPlayerForEdit(i) { const p = config.players[i]; document.getElementById('playerNick').value = p.nickname; document.getElementById('playerReal').value = p.realName; document.getElementById('editPlayerIndex').value = i; document.getElementById('btnSavePlayer').innerText = 'Actualizar'; document.getElementById('btnCancelEditPlayer').classList.remove('hidden'); }
@@ -2243,9 +2318,218 @@
             }
         }
 
-        // ==================== PREDICTIONS SYSTEM ====================
-        let activePrediction = null;
-        let predictions = {}; // { oderId: { game, players, votes: { voter: predicted } } }
+        // ==================== PENDING MATCHES & PREDICTIONS (SUPABASE) ====================
+        let pendingMatches = [];
+
+        async function loadPendingMatches() {
+            const { data } = await sbClient.from('matches').select('*').is('winner', null).order('created_at', { ascending: false });
+            pendingMatches = data || [];
+            renderPendingMatches();
+        }
+
+        function renderPendingMatches() {
+            const container = document.getElementById('pendingMatchesList');
+            if (!container) return;
+
+            if (pendingMatches.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">No hay partidas en curso.</p>';
+                return;
+            }
+
+            container.innerHTML = pendingMatches.map(m => {
+                const isObs = currentUser?.isObserver;
+                return `
+                    <div class="glass p-4 rounded-xl border-l-4 border-yellow-500">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <span class="font-bold text-white">${m.game}</span>
+                                <span class="text-xs text-slate-400 ml-2">${new Date(m.created_at).toLocaleTimeString()}</span>
+                            </div>
+                            <span class="bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded text-xs font-bold animate-pulse">
+                                ⏳ EN CURSO
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            ${m.players.map(p => `<span class="bg-slate-700 px-2 py-1 rounded text-xs">${p}</span>`).join('')}
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="showVotingModal(${m.id})" class="flex-1 py-2 bg-purple-600/50 hover:bg-purple-600 rounded-lg text-sm font-bold text-white transition-colors">
+                                <i class="fas fa-vote-yea mr-1"></i> Votar Predicción
+                            </button>
+                            ${!isObs ? `
+                            <button onclick="finalizePendingMatch(${m.id})" class="flex-1 py-2 bg-green-600/50 hover:bg-green-600 rounded-lg text-sm font-bold text-white transition-colors">
+                                <i class="fas fa-trophy mr-1"></i> Finalizar
+                            </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function startPendingMatch() {
+            const g = document.getElementById('inputGame').value;
+            const d = document.getElementById('inputDate').value;
+            const n = document.getElementById('inputNotes').value;
+
+            if (!g || g === 'Selecciona...' || activePlayers.length < 2) {
+                return Swal.fire('Faltan datos', 'Selecciona juego y al menos 2 jugadores', 'warning');
+            }
+
+            const match = {
+                game: g,
+                players: activePlayers,
+                notes: n,
+                played_date: d,
+                winner: null, // NULL = pending
+                scores: null
+            };
+
+            const { data, error } = await sbClient.from('matches').insert([match]).select();
+
+            if (error) {
+                return Swal.fire('Error', error.message, 'error');
+            }
+
+            cancelEditMatch();
+            loadPendingMatches();
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Partida iniciada!',
+                text: 'Los demás pueden votar predicciones. Finalizala cuando haya ganador.',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        }
+
+        async function showVotingModal(matchId) {
+            const match = pendingMatches.find(m => m.id === matchId);
+            if (!match) return;
+
+            // Load existing votes for this match
+            const { data: votes } = await sbClient.from('predictions').select('*').eq('match_id', matchId);
+            const myVote = votes?.find(v => v.voter === currentUser?.name);
+            const voteCounts = {};
+            votes?.forEach(v => { voteCounts[v.predicted] = (voteCounts[v.predicted] || 0) + 1; });
+
+            const { value: selected } = await Swal.fire({
+                title: `🔮 ¿Quién gana?`,
+                html: `
+                    <p class="text-sm text-slate-400 mb-4">${match.game}</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        ${match.players.map(p => `
+                            <button class="swal2-confirm swal2-styled vote-btn ${myVote?.predicted === p ? 'bg-purple-600' : ''}" 
+                                    data-player="${p}" style="margin:4px;">
+                                ${p} ${voteCounts[p] ? `(${voteCounts[p]})` : ''}
+                            </button>
+                        `).join('')}
+                    </div>
+                    ${myVote ? `<p class="text-xs text-purple-400 mt-3">Tu voto: ${myVote.predicted}</p>` : ''}
+                `,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'Cerrar',
+                background: '#1e293b',
+                color: '#fff',
+                didOpen: () => {
+                    document.querySelectorAll('.vote-btn').forEach(btn => {
+                        btn.addEventListener('click', async () => {
+                            const player = btn.dataset.player;
+                            await submitVote(matchId, player);
+                            Swal.close();
+                        });
+                    });
+                }
+            });
+        }
+
+        async function submitVote(matchId, predicted) {
+            if (!currentUser) return;
+
+            // Upsert vote
+            await sbClient.from('predictions').upsert({
+                match_id: matchId,
+                voter: currentUser.name,
+                predicted: predicted
+            }, { onConflict: 'match_id,voter' });
+
+            Swal.fire({ icon: 'success', title: `Votaste por ${predicted}`, timer: 1000, showConfirmButton: false });
+        }
+
+        async function finalizePendingMatch(matchId) {
+            const match = pendingMatches.find(m => m.id === matchId);
+            if (!match) return;
+
+            const { value: winner } = await Swal.fire({
+                title: '🏆 ¿Quién ganó?',
+                input: 'select',
+                inputOptions: Object.fromEntries(match.players.map(p => [p, p])),
+                inputPlaceholder: 'Selecciona ganador',
+                showCancelButton: true,
+                background: '#1e293b',
+                color: '#fff'
+            });
+
+            if (!winner) return;
+
+            // Update match with winner
+            await sbClient.from('matches').update({ winner }).eq('id', matchId);
+
+            // Calculate prediction results
+            const { data: votes } = await sbClient.from('predictions').select('*').eq('match_id', matchId);
+            const correct = votes?.filter(v => v.predicted === winner) || [];
+            const incorrect = votes?.filter(v => v.predicted !== winner) || [];
+
+            // Update prediction results
+            for (const v of votes || []) {
+                await sbClient.from('predictions').update({
+                    actual_winner: winner,
+                    correct: v.predicted === winner
+                }).eq('match_id', matchId).eq('voter', v.voter);
+            }
+
+            loadPendingMatches();
+
+            let resultHtml = `<strong>${winner}</strong> ganó la partida.`;
+            if (correct.length > 0) {
+                resultHtml += `<br><br>🎯 Acertaron: ${correct.map(v => v.voter).join(', ')}`;
+            }
+            if (incorrect.length > 0) {
+                resultHtml += `<br>❌ Fallaron: ${incorrect.map(v => v.voter).join(', ')}`;
+            }
+
+            playSound('win');
+            launchConfetti();
+
+            Swal.fire({
+                title: '🏆 ¡Partida Finalizada!',
+                html: resultHtml,
+                icon: 'success',
+                background: '#1e293b',
+                color: '#fff'
+            });
+        }
+
+        // Setup realtime for pending matches
+        function setupPendingMatchesRealtime() {
+            sbClient.channel('pending-matches')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
+                    loadPendingMatches();
+                })
+                .subscribe();
+        }
+
+        // Load on nav
+        const origNav = nav;
+        nav = function (target) {
+            origNav(target);
+            if (target === 'register') loadPendingMatches();
+            if (target === 'predictions') renderPredictionsStats();
+        };
+
+        // ==================== PREDICTIONS STATS ====================
+        let predictions = {};
 
         function loadPredictions() {
             const saved = localStorage.getItem('bgtracker_predictions');
@@ -2257,56 +2541,72 @@
         }
 
         function startPrediction(game, players) {
-            const id = Date.now();
-            activePrediction = { id, game, players, votes: {} };
-            predictions[id] = activePrediction;
-            savePredictions();
-
-            // Broadcast to other users (using localStorage event)
-            localStorage.setItem('bgtracker_active_prediction', JSON.stringify(activePrediction));
+            // Now handled by pending matches, this is just for compatibility
         }
 
         function renderPredictions() {
-            loadPredictions();
+            // Show pending matches in predictions view  
+            const activeDiv = document.getElementById('activePrediction');
+            const noDiv = document.getElementById('noPrediction');
+            const playersDiv = document.getElementById('predictionPlayers');
+            const votesDiv = document.getElementById('predictionVotes');
+            const gameSpan = document.getElementById('predictionGame');
 
-            // Check for active prediction from localStorage (cross-tab sync)
-            const active = localStorage.getItem('bgtracker_active_prediction');
-            if (active) {
-                activePrediction = JSON.parse(active);
-            }
+            if (pendingMatches.length > 0) {
+                activeDiv.classList.remove('hidden');
+                noDiv.classList.add('hidden');
 
-            if (activePrediction && !activePrediction.closed) {
-                document.getElementById('activePrediction').classList.remove('hidden');
-                document.getElementById('noPrediction').classList.add('hidden');
-                document.getElementById('predictionGame').innerText = activePrediction.game;
+                // Show first pending match
+                const pm = pendingMatches[0];
+                gameSpan.innerText = pm.game;
 
-                const playersDiv = document.getElementById('predictionPlayers');
-                const myVote = activePrediction.votes[currentUser?.name];
-
-                playersDiv.innerHTML = activePrediction.players.map(p => `
-                    <button onclick="votePrediction('${p}')" 
-                        class="p-3 rounded-lg text-center transition-all ${myVote === p ? 'bg-purple-600 text-white font-bold ring-2 ring-purple-400' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+                playersDiv.innerHTML = pm.players.map(p => `
+                    <button onclick="showVotingModal(${pm.id})" 
+                        class="p-3 rounded-lg text-center transition-all bg-slate-800 text-slate-300 hover:bg-purple-600 hover:text-white">
                         ${p}
-                        ${myVote === p ? ' ✓' : ''}
                     </button>
                 `).join('');
 
-                // Show vote counts
-                const voteCounts = {};
-                Object.values(activePrediction.votes).forEach(v => { voteCounts[v] = (voteCounts[v] || 0) + 1; });
-                const totalVotes = Object.keys(activePrediction.votes).length;
-
-                document.getElementById('predictionVotes').innerHTML = totalVotes > 0 ?
-                    `${totalVotes} voto${totalVotes > 1 ? 's' : ''}: ` +
-                    Object.entries(voteCounts).map(([p, c]) => `${p}: ${c}`).join(', ') :
-                    'Nadie votó aún';
+                votesDiv.innerHTML = `<a href="#" onclick="nav('register')" class="text-purple-400 underline">Ver todas las partidas en curso (${pendingMatches.length})</a>`;
             } else {
-                document.getElementById('activePrediction').classList.add('hidden');
-                document.getElementById('noPrediction').classList.remove('hidden');
+                activeDiv.classList.add('hidden');
+                noDiv.classList.remove('hidden');
             }
 
-            // Stats
-            renderPredictionStats();
+            // Stats from Supabase
+            renderPredictionsStats();
+        }
+
+        async function renderPredictionsStats() {
+            const statsDiv = document.getElementById('predictionStats');
+            if (!statsDiv) return;
+
+            // Get all predictions with results from Supabase
+            const { data: allPreds } = await sbClient.from('predictions').select('*').not('actual_winner', 'is', null);
+
+            if (!allPreds || allPreds.length === 0) {
+                statsDiv.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Sin datos aún. Vota en partidas pendientes.</p>';
+                return;
+            }
+
+            // Calculate accuracy per voter
+            const accuracy = {};
+            allPreds.forEach(pred => {
+                if (!accuracy[pred.voter]) accuracy[pred.voter] = { correct: 0, total: 0 };
+                accuracy[pred.voter].total++;
+                if (pred.correct) accuracy[pred.voter].correct++;
+            });
+
+            const sorted = Object.entries(accuracy)
+                .map(([name, stats]) => ({ name, ...stats, rate: (stats.correct / stats.total * 100).toFixed(0) }))
+                .sort((a, b) => b.rate - a.rate);
+
+            statsDiv.innerHTML = sorted.map((s, i) => `
+                <div class="flex justify-between items-center p-3 bg-slate-800/50 rounded-lg">
+                    <span class="text-white">${i === 0 ? '🎯 ' : ''}${s.name}</span>
+                    <span class="text-purple-400 font-bold">${s.rate}% (${s.correct}/${s.total})</span>
+                </div>
+            `).join('');
         }
 
         function votePrediction(player) {
