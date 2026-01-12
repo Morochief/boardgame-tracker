@@ -2,7 +2,7 @@
   "name": "Boardgame Tracker",
   "short_name": "BG Tracker",
   "description": "Track your board game matches, stats and rankings",
-  "start_url": "/index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
