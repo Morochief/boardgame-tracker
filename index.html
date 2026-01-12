@@ -2175,39 +2175,33 @@
             if (target === 'predictions') renderPredictions();
         };
 
-        // ==================== SEASONS SYSTEM ====================
+        // ==================== SEASONS SYSTEM (SUPABASE) ====================
         let seasons = [];
         let currentSeason = null;
 
         async function loadSeasons() {
-            // Load seasons from localStorage (could be moved to Supabase)
-            const saved = localStorage.getItem('bgtracker_seasons');
-            if (saved) {
-                seasons = JSON.parse(saved);
-            }
+            const { data } = await sbClient.from('seasons').select('*').order('id', { ascending: true });
+            seasons = data || [];
+
             if (seasons.length === 0) {
                 // Create first season
-                seasons.push({
-                    id: 1,
+                const { data: newSeason } = await sbClient.from('seasons').insert([{
                     name: 'Temporada 1',
-                    startDate: new Date().toISOString().split('T')[0],
-                    endDate: null,
+                    start_date: new Date().toISOString().split('T')[0],
                     active: true
-                });
-                saveSeasons();
+                }]).select().single();
+                if (newSeason) seasons = [newSeason];
             }
             currentSeason = seasons.find(s => s.active) || seasons[seasons.length - 1];
         }
 
-        function saveSeasons() {
-            localStorage.setItem('bgtracker_seasons', JSON.stringify(seasons));
-        }
-
-        function renderSeasons() {
-            loadSeasons();
+        async function renderSeasons() {
+            await loadSeasons();
 
             // Populate season selector
             const selector = document.getElementById('seasonSelector');
+            if (!selector) return;
+
             selector.innerHTML = seasons.map(s =>
                 `<option value="${s.id}" ${s.id === currentSeason?.id ? 'selected' : ''}>
                     ${s.name} ${s.active ? '(Actual)' : ''}
@@ -2215,8 +2209,8 @@
             ).join('');
 
             // Calculate stats for current season
-            const seasonStart = currentSeason?.startDate || '1970-01-01';
-            const seasonEnd = currentSeason?.endDate || '2999-12-31';
+            const seasonStart = currentSeason?.start_date || '1970-01-01';
+            const seasonEnd = currentSeason?.end_date || '2999-12-31';
 
             const seasonMatches = matches.filter(m => {
                 const date = m.played_date || m.created_at.split('T')[0];
@@ -2227,7 +2221,7 @@
 
             // MVP
             const wins = {};
-            seasonMatches.forEach(m => { wins[m.winner] = (wins[m.winner] || 0) + 1; });
+            seasonMatches.forEach(m => { if (m.winner) wins[m.winner] = (wins[m.winner] || 0) + 1; });
             const mvp = Object.entries(wins).sort((a, b) => b[1] - a[1])[0];
             document.getElementById('seasonMVP').innerText = mvp ? mvp[0] : '-';
 
@@ -2251,17 +2245,17 @@
                 historyDiv.innerHTML = closedSeasons.reverse().map(s => {
                     const sMatches = matches.filter(m => {
                         const date = m.played_date || m.created_at.split('T')[0];
-                        return date >= s.startDate && date <= (s.endDate || '2999-12-31');
+                        return date >= s.start_date && date <= (s.end_date || '2999-12-31');
                     });
                     const sWins = {};
-                    sMatches.forEach(m => { sWins[m.winner] = (sWins[m.winner] || 0) + 1; });
+                    sMatches.forEach(m => { if (m.winner) sWins[m.winner] = (sWins[m.winner] || 0) + 1; });
                     const sMvp = Object.entries(sWins).sort((a, b) => b[1] - a[1])[0];
 
                     return `
                         <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
                             <div class="flex justify-between items-center mb-2">
                                 <span class="font-bold text-white">${s.name}</span>
-                                <span class="text-xs text-slate-500">${s.startDate} → ${s.endDate}</span>
+                                <span class="text-xs text-slate-500">${s.start_date} → ${s.end_date}</span>
                             </div>
                             <div class="flex gap-4 text-sm">
                                 <span class="text-slate-400">Partidas: <b class="text-white">${sMatches.length}</b></span>
@@ -2273,10 +2267,10 @@
             }
         }
 
-        function changeSeason() {
+        async function changeSeason() {
             const selectedId = parseInt(document.getElementById('seasonSelector').value);
             currentSeason = seasons.find(s => s.id === selectedId);
-            renderSeasons();
+            await renderSeasons();
         }
 
         async function closeSeason() {
@@ -2294,26 +2288,22 @@
             });
 
             if (result.isConfirmed) {
-                // Close current season
-                const current = seasons.find(s => s.active);
-                if (current) {
-                    current.active = false;
-                    current.endDate = new Date().toISOString().split('T')[0];
+                // Close current season in Supabase
+                if (currentSeason) {
+                    await sbClient.from('seasons').update({
+                        active: false,
+                        end_date: new Date().toISOString().split('T')[0]
+                    }).eq('id', currentSeason.id);
                 }
 
-                // Create new season
-                const newSeason = {
-                    id: seasons.length + 1,
+                // Create new season in Supabase
+                await sbClient.from('seasons').insert([{
                     name: result.value,
-                    startDate: new Date().toISOString().split('T')[0],
-                    endDate: null,
+                    start_date: new Date().toISOString().split('T')[0],
                     active: true
-                };
-                seasons.push(newSeason);
-                currentSeason = newSeason;
-                saveSeasons();
+                }]);
 
-                renderSeasons();
+                await renderSeasons();
                 Swal.fire({ title: '¡Nueva temporada!', text: `${result.value} ha comenzado`, icon: 'success', background: '#1e293b', color: '#fff' });
             }
         }
@@ -2711,8 +2701,37 @@
                 .subscribe();
         };
 
-        // ==================== THEME TOGGLE ====================
-        let currentTheme = localStorage.getItem('bgtracker_theme') || 'dark';
+        // ==================== THEME & SOUND (SUPABASE) ====================
+        let currentTheme = 'dark';
+        let soundEnabled = true;
+
+        async function loadUserPreferences() {
+            if (!currentUser?.name) return;
+
+            const { data } = await sbClient.from('user_preferences')
+                .select('*')
+                .eq('user_name', currentUser.name)
+                .single();
+
+            if (data) {
+                currentTheme = data.theme || 'dark';
+                soundEnabled = data.sound_enabled !== false;
+            }
+
+            applyTheme(currentTheme);
+            applySound();
+        }
+
+        async function saveUserPreferences() {
+            if (!currentUser?.name) return;
+
+            await sbClient.from('user_preferences').upsert({
+                user_name: currentUser.name,
+                theme: currentTheme,
+                sound_enabled: soundEnabled,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_name' });
+        }
 
         function applyTheme(theme) {
             if (theme === 'light') {
@@ -2728,17 +2747,24 @@
             }
         }
 
-        function toggleTheme() {
-            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('bgtracker_theme', currentTheme);
-            applyTheme(currentTheme);
+        function applySound() {
+            document.getElementById('soundIcon')?.classList.toggle('fa-volume-up', soundEnabled);
+            document.getElementById('soundIcon')?.classList.toggle('fa-volume-mute', !soundEnabled);
+            if (document.getElementById('soundText')) document.getElementById('soundText').innerText = `Sonidos: ${soundEnabled ? 'ON' : 'OFF'}`;
         }
 
-        // Apply saved theme on load
-        applyTheme(currentTheme);
+        async function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(currentTheme);
+            await saveUserPreferences();
+        }
 
-        // ==================== SOUND EFFECTS ====================
-        let soundEnabled = localStorage.getItem('bgtracker_sound') !== 'off';
+        async function toggleSound() {
+            soundEnabled = !soundEnabled;
+            applySound();
+            if (soundEnabled) playSound('click');
+            await saveUserPreferences();
+        }
 
         const SOUNDS = {
             success: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoGAACBhYqWJZl615qTkIl7dn+BgoOEhYaHhl5RNSkdFhQVGR4kKzI5QEZOVFxlaG9zdH1/g4eKioyNjIqHhH97d3NuaGNdV1BIQDguJBsSDw4OEBUcJC45RFFdaXR+iJOek6KrrLG1t7m6ubq5uLa0saijo6WampWOh398dXBoYFlRSUE4LyYdFQ4NDRIMEB0rO0xfdIycq7nI1djc3t3a2NXRy8W+t7Cum5SOhX1za2NbU0tDOTImGhANCw0QFh8rOUhab4SXq77UyN/v8/T09PLw7eno4drTy8K4rqSai4F2a2FYTkU8MikfFg4MCg4SHCg3R1lwh5+zydXl8/j39PLw7OjEvraxn4+EdGlfVUxCNysfEgkEBQoTIS4+UV55lK282e/z+Pr37tLBs6qajn9uXlJINyoeEAb/+f8KFikAMUj/cL6y/+bo/3fv+O7Gq5N0XUEvHQoA8+73CBwxQlttgJWhtbO2t7msno6AdGxmYFxbWltbXF1dXl9gYGBfXl1cWlhWVFFOSkZBPDczLigkHxoVEQ0JBgMAAP//AAIFCQwQFBggJy40Oj9ETlZeZm10e4GHjJCSk5KPjIiDfXZva2djXlpWU09LR0RAOzYxLCgjHxoVEQ0JBQEA//4AAgUJDA8SGBohKC41Oz1ARklMT1FTVVZXVlVVVFNRTktIRT89OjcyLiomIR0ZFRENCggFAwEA/wABAwYJDA8SFRgbHh8fIB8fHh0bGRcUEQ4LCQcFAwEAAP8AAQIEBwoPExYaHSAjJScpKispKCclIx8cGRYTDwwJBQMAAAAAAAABAgQHCg0QExYZGx0fHyAgHx4dGxoYFhMQDgsIBQMHDBETDA0IBQMCAQEBAQICAwQEBQUGBgYGBgYFBQQEAwMCAQEBAQAAAAD/AAD/AAEBAQICAQEBAQAAAP//AAAA',
@@ -2753,21 +2779,6 @@
                 audio.volume = 0.3;
                 audio.play().catch(() => { });
             } catch (e) { }
-        }
-
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            localStorage.setItem('bgtracker_sound', soundEnabled ? 'on' : 'off');
-            document.getElementById('soundIcon')?.classList.toggle('fa-volume-up', soundEnabled);
-            document.getElementById('soundIcon')?.classList.toggle('fa-volume-mute', !soundEnabled);
-            if (document.getElementById('soundText')) document.getElementById('soundText').innerText = `Sonidos: ${soundEnabled ? 'ON' : 'OFF'}`;
-            if (soundEnabled) playSound('click');
-        }
-
-        // Apply sound state on load
-        if (!soundEnabled) {
-            document.getElementById('soundIcon')?.classList.replace('fa-volume-up', 'fa-volume-mute');
-            if (document.getElementById('soundText')) document.getElementById('soundText').innerText = 'Sonidos: OFF';
         }
 
         // ==================== CONFETTI ====================
@@ -2799,6 +2810,15 @@
             await originalSubmitMatch();
             playSound('win');
             launchConfetti();
+        };
+
+        // Hook into enterApp to load user preferences
+        const originalEnterApp2 = enterApp;
+        enterApp = async function () {
+            await originalEnterApp2();
+            await loadUserPreferences();
+            await loadPendingMatches();
+            setupPendingMatchesRealtime();
         };
 
         // ==================== PWA SERVICE WORKER ====================
