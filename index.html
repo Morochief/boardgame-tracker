@@ -2719,15 +2719,15 @@
                 const { data, error } = await sbClient.from('user_preferences')
                     .select('*')
                     .eq('user_name', currentUser.name)
-                    .single();
+                    .limit(1);
 
-                if (data && !error) {
-                    currentTheme = data.theme || 'dark';
-                    soundEnabled = data.sound_enabled !== false;
+                if (data && data.length > 0 && !error) {
+                    currentTheme = data[0].theme || 'dark';
+                    soundEnabled = data[0].sound_enabled !== false;
                 }
             } catch (e) {
                 // Table might not exist yet, use defaults
-                console.log('user_preferences table not found, using defaults');
+                console.log('user_preferences not found, using defaults');
             }
 
             applyTheme(currentTheme);
