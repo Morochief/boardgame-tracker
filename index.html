@@ -1358,17 +1358,87 @@
         <nav class="md:hidden fixed bottom-0 w-full glass border-t border-slate-800 p-2 z-50 flex justify-around">
             <button onclick="nav('dashboard')" class="nav-btn active flex flex-col items-center p-2 rounded-lg text-xs"
                 data-target="dashboard"><i class="fas fa-chart-pie text-lg mb-1"></i></button>
-            <button onclick="nav('tournament')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs"
-                data-target="tournament"><i class="fas fa-trophy text-lg mb-1"></i></button>
             <button onclick="nav('register')" id="mobRegister"
                 class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="register"><i
                     class="fas fa-plus-circle text-2xl mb-1 text-neon-cyan"></i></button>
-            <button onclick="nav('achievements')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs"
-                data-target="achievements"><i class="fas fa-medal text-lg mb-1"></i></button>
-            <button onclick="nav('settings')" id="mobSettings"
-                class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="settings"><i
-                    class="fas fa-cog text-lg mb-1"></i></button>
+            <button onclick="nav('predictions')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs"
+                data-target="predictions"><i class="fas fa-magic text-lg mb-1"></i></button>
+            <button onclick="toggleMobileMenu()"
+                class="flex flex-col items-center p-2 rounded-lg text-xs text-slate-400">
+                <i class="fas fa-bars text-lg mb-1"></i>
+            </button>
         </nav>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobileMenuOverlay" class="hidden fixed inset-0 bg-black/70 z-[60]" onclick="closeMobileMenu()"></div>
+        <div id="mobileMenu"
+            class="hidden fixed bottom-0 left-0 right-0 glass border-t border-slate-700 z-[70] p-4 rounded-t-3xl max-h-[70vh] overflow-y-auto">
+            <div class="w-12 h-1 bg-slate-600 rounded-full mx-auto mb-4"></div>
+            <h3 class="font-bold text-white text-center mb-4">Menú</h3>
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="nav('dashboard'); closeMobileMenu();"
+                    class="flex flex-col items-center p-3 bg-slate-800 rounded-xl">
+                    <i class="fas fa-chart-pie text-xl mb-2 text-neon-violet"></i>
+                    <span class="text-xs">Dashboard</span>
+                </button>
+                <button onclick="nav('analytics'); closeMobileMenu();"
+                    class="flex flex-col items-center p-3 bg-slate-800 rounded-xl">
+                    <i class="fas fa-chart-line text-xl mb-2 text-blue-400"></i>
+                    <span class="text-xs">Analytics</span>
+                </button>
+                <button onclick="nav('tournament'); closeMobileMenu();"
+                    class="flex flex-col items-center p-3 bg-slate-800 rounded-xl">
+                    <i class="fas fa-trophy text-xl mb-2 text-yellow-400"></i>
+                    <span class="text-xs">Torneo</span>
+                </button>
+                <button onclick="nav('achievements'); closeMobileMenu();"
+                    class="flex flex-col items-center p-3 bg-slate-800 rounded-xl">
+                    <i class="fas fa-medal text-xl mb-2 text-orange-400"></i>
+                    <span class="text-xs">Logros</span>
+                </button>
+                <button onclick="nav('seasons'); closeMobileMenu();"
+                    class="flex flex-col items-center p-3 bg-slate-800 rounded-xl">
+                    <i class="fas fa-calendar text-xl mb-2 text-emerald-400"></i>
+                    <span class="text-xs">Temporadas</span>
+                </button>
+                <button onclick="nav('predictions'); closeMobileMenu();"
+                    class="flex flex-col items-center p-3 bg-slate-800 rounded-xl">
+                    <i class="fas fa-magic text-xl mb-2 text-purple-400"></i>
+                    <span class="text-xs">Predicciones</span>
+                </button>
+                <button onclick="nav('justice'); closeMobileMenu();"
+                    class="flex flex-col items-center p-3 bg-slate-800 rounded-xl">
+                    <i class="fas fa-balance-scale text-xl mb-2 text-red-400"></i>
+                    <span class="text-xs">Justicia</span>
+                </button>
+                <button onclick="nav('history'); closeMobileMenu();"
+                    class="flex flex-col items-center p-3 bg-slate-800 rounded-xl">
+                    <i class="fas fa-history text-xl mb-2 text-slate-400"></i>
+                    <span class="text-xs">Historial</span>
+                </button>
+                <button onclick="nav('settings'); closeMobileMenu();"
+                    class="flex flex-col items-center p-3 bg-slate-800 rounded-xl">
+                    <i class="fas fa-cog text-xl mb-2 text-slate-400"></i>
+                    <span class="text-xs">Ajustes</span>
+                </button>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-700 grid grid-cols-2 gap-3">
+                <button onclick="toggleTheme(); closeMobileMenu();"
+                    class="flex items-center justify-center gap-2 p-3 bg-slate-800 rounded-xl">
+                    <i id="mobileThemeIcon" class="fas fa-moon"></i>
+                    <span class="text-xs">Tema</span>
+                </button>
+                <button onclick="toggleSound(); closeMobileMenu();"
+                    class="flex items-center justify-center gap-2 p-3 bg-slate-800 rounded-xl">
+                    <i id="mobileSoundIcon" class="fas fa-volume-up"></i>
+                    <span class="text-xs">Sonido</span>
+                </button>
+            </div>
+            <button onclick="showProfileManager()"
+                class="w-full mt-4 p-3 bg-gradient-to-r from-neon-violet to-neon-cyan rounded-xl font-bold text-black">
+                <i class="fas fa-users mr-2"></i> Administrar Perfiles
+            </button>
+        </div>
     </div>
 
     <script>
@@ -1404,6 +1474,24 @@
                 }
             }
         });
+
+        // Mobile Menu Functions
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+            document.getElementById('mobileMenuOverlay').classList.toggle('hidden');
+        }
+        function closeMobileMenu() {
+            document.getElementById('mobileMenu').classList.add('hidden');
+            document.getElementById('mobileMenuOverlay').classList.add('hidden');
+        }
+        function showProfileManager() {
+            closeMobileMenu();
+            // Go back to login screen to manage profiles
+            document.getElementById('appContent').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            isAdminMode = true;
+            renderProfiles();
+        }
 
         function simpleHash(str) { let hash = 0; for (let i = 0; i < str.length; i++) { const char = str.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash = hash & hash; } return Math.abs(hash).toString(16); }
 
