@@ -916,9 +916,11 @@
                 if (savedUser) {
                     try {
                         const saved = JSON.parse(savedUser);
-                        const found = profiles.find(p => p.id === saved.id);
-                        if (found) { currentUser = found; updateCurrentUserBadge(); await enterApp(); }
-                        else { sessionStorage.removeItem('currentUser'); }
+                        if (saved && saved.id) {
+                            const found = profiles.find(p => p.id === saved.id);
+                            if (found) { currentUser = found; updateCurrentUserBadge(); await enterApp(); }
+                            else { sessionStorage.removeItem('currentUser'); }
+                        }
                     } catch (e) { console.error(e); }
                 }
             }
