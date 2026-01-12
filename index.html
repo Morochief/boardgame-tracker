@@ -4,7 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Track your board game matches, stats and rankings">
     <title>🎲 Boardgame Tracker</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+
+    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;600&display=swap"
@@ -13,23 +24,70 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
     <script>
         tailwind.config = { theme: { extend: { fontFamily: { 'gaming': ['Orbitron', 'sans-serif'], 'body': ['Inter', 'sans-serif'] }, colors: { 'neon-violet': '#a855f7', 'neon-cyan': '#22d3ee', 'neon-pink': '#ec4899', 'neon-red': '#ef4444', 'dark-bg': '#0f172a' } } } }
     </script>
     <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: rgba(30, 41, 59, 0.7);
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f1f5f9;
+            --bg-secondary: rgba(255, 255, 255, 0.9);
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --border-color: rgba(0, 0, 0, 0.1);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        [data-theme="light"] .glass {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+
+        [data-theme="light"] .bg-slate-800,
+        [data-theme="light"] .bg-slate-800\/50 {
+            background: rgba(226, 232, 240, 0.8) !important;
+        }
+
+        [data-theme="light"] .text-white {
+            color: #1e293b !important;
+        }
+
+        [data-theme="light"] .text-slate-300,
+        [data-theme="light"] .text-slate-400 {
+            color: #475569 !important;
+        }
+
+        [data-theme="light"] .border-slate-700,
+        [data-theme="light"] .border-slate-600 {
+            border-color: #cbd5e1 !important;
+        }
+
+        [data-theme="light"] .bg-orb {
+            opacity: 0.1;
         }
 
         .glass {
-            background: rgba(30, 41, 59, 0.7);
+            background: var(--bg-secondary);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
+            transition: background 0.3s ease;
         }
 
         .glass-danger {
@@ -841,6 +899,18 @@
                 <button id="navSettings" onclick="nav('settings')"
                     class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
                     data-target="settings"><i class="fas fa-cog w-5"></i> Configuración</button>
+            </div>
+            <div class="mt-auto pt-6 border-t border-slate-700">
+                <button onclick="toggleTheme()"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium text-slate-400">
+                    <i id="themeIcon" class="fas fa-moon w-5"></i>
+                    <span id="themeText">Modo Oscuro</span>
+                </button>
+                <button onclick="toggleSound()"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium text-slate-400">
+                    <i id="soundIcon" class="fas fa-volume-up w-5"></i>
+                    <span id="soundText">Sonidos: ON</span>
+                </button>
             </div>
         </nav>
 
@@ -2340,6 +2410,123 @@
                 })
                 .subscribe();
         };
+
+        // ==================== THEME TOGGLE ====================
+        let currentTheme = localStorage.getItem('bgtracker_theme') || 'dark';
+
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                document.getElementById('themeIcon')?.classList.replace('fa-moon', 'fa-sun');
+                if (document.getElementById('themeText')) document.getElementById('themeText').innerText = 'Modo Claro';
+                document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#f1f5f9');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                document.getElementById('themeIcon')?.classList.replace('fa-sun', 'fa-moon');
+                if (document.getElementById('themeText')) document.getElementById('themeText').innerText = 'Modo Oscuro';
+                document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0f172a');
+            }
+        }
+
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('bgtracker_theme', currentTheme);
+            applyTheme(currentTheme);
+        }
+
+        // Apply saved theme on load
+        applyTheme(currentTheme);
+
+        // ==================== SOUND EFFECTS ====================
+        let soundEnabled = localStorage.getItem('bgtracker_sound') !== 'off';
+
+        const SOUNDS = {
+            success: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoGAACBhYqWJZl615qTkIl7dn+BgoOEhYaHhl5RNSkdFhQVGR4kKzI5QEZOVFxlaG9zdH1/g4eKioyNjIqHhH97d3NuaGNdV1BIQDguJBsSDw4OEBUcJC45RFFdaXR+iJOek6KrrLG1t7m6ubq5uLa0saijo6WampWOh398dXBoYFlRSUE4LyYdFQ4NDRIMEB0rO0xfdIycq7nI1djc3t3a2NXRy8W+t7Cum5SOhX1za2NbU0tDOTImGhANCw0QFh8rOUhab4SXq77UyN/v8/T09PLw7eno4drTy8K4rqSai4F2a2FYTkU8MikfFg4MCg4SHCg3R1lwh5+zydXl8/j39PLw7OjEvraxn4+EdGlfVUxCNysfEgkEBQoTIS4+UV55lK282e/z+Pr37tLBs6qajn9uXlJINyoeEAb/+f8KFikAMUj/cL6y/+bo/3fv+O7Gq5N0XUEvHQoA8+73CBwxQlttgJWhtbO2t7msno6AdGxmYFxbWltbXF1dXl9gYGBfXl1cWlhWVFFOSkZBPDczLigkHxoVEQ0JBgMAAP//AAIFCQwQFBggJy40Oj9ETlZeZm10e4GHjJCSk5KPjIiDfXZva2djXlpWU09LR0RAOzYxLCgjHxoVEQ0JBQEA//4AAgUJDA8SGBohKC41Oz1ARklMT1FTVVZXVlVVVFNRTktIRT89OjcyLiomIR0ZFRENCggFAwEA/wABAwYJDA8SFRgbHh8fIB8fHh0bGRcUEQ4LCQcFAwEAAP8AAQIEBwoPExYaHSAjJScpKispKCclIx8cGRYTDwwJBQMAAAAAAAABAgQHCg0QExYZGx0fHyAgHx4dGxoYFhMQDgsIBQMHDBETDA0IBQMCAQEBAQICAwQEBQUGBgYGBgYFBQQEAwMCAQEBAQAAAAD/AAD/AAEBAQICAQEBAQAAAP//AAAA',
+            click: 'data:audio/wav;base64,UklGRl4DAABXQVZFZm10IBAAAAABAAEAIlYAABJWAAABAAgAZGF0YToDAACAe3R2c3F0dnd7g4uWoq60ur/Cx8zQ1NbY2NnZ2djX1tXRzcnEvreyq6SdlpCJg3x2cW1qamprbXF2fISMlZujq7K4vcLFycvMzMzLycfEv7uzo5mPaUc2MSopLi85RVBZYGRhYGBfYGBkam97ipunuczl+v/9AAAAAAAAAAAAvIlRMxce',
+            win: 'data:audio/wav;base64,UklGRqgFAABXQVZFZm10IBAAAAABAAEAESsAABErAAABAAgAZGF0YYQFAACAcGdiZm93gIuVoKixu8PM1dze4uTm5+jo5+fm5OHe2dTPyMG5sq2mop+YkIl/dnJwa29ydXqAhoyTmqGorrW7wcbKz9HT1NXVU1NTU1JTU1VSUF9vgoqQiXhoamxweomMlJ2iqau0ubq8u7q5uLm7vLu8urm5u7u6u7q2tLOytbe4ubm5ubm5ubm5ubm5ubq7vL6/wcPFx8jJyMjIyMnKy8zNzs/Q0NDP'
+        };
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const audio = new Audio(SOUNDS[type] || SOUNDS.click);
+                audio.volume = 0.3;
+                audio.play().catch(() => { });
+            } catch (e) { }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('bgtracker_sound', soundEnabled ? 'on' : 'off');
+            document.getElementById('soundIcon')?.classList.toggle('fa-volume-up', soundEnabled);
+            document.getElementById('soundIcon')?.classList.toggle('fa-volume-mute', !soundEnabled);
+            if (document.getElementById('soundText')) document.getElementById('soundText').innerText = `Sonidos: ${soundEnabled ? 'ON' : 'OFF'}`;
+            if (soundEnabled) playSound('click');
+        }
+
+        // Apply sound state on load
+        if (!soundEnabled) {
+            document.getElementById('soundIcon')?.classList.replace('fa-volume-up', 'fa-volume-mute');
+            if (document.getElementById('soundText')) document.getElementById('soundText').innerText = 'Sonidos: OFF';
+        }
+
+        // ==================== CONFETTI ====================
+        function launchConfetti() {
+            if (typeof confetti === 'undefined') return;
+
+            // Fire confetti from multiple angles
+            const count = 200;
+            const defaults = { origin: { y: 0.7 }, zIndex: 9999 };
+
+            function fire(particleRatio, opts) {
+                confetti({
+                    ...defaults,
+                    ...opts,
+                    particleCount: Math.floor(count * particleRatio)
+                });
+            }
+
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
+        }
+
+        // Hook into submitMatch to trigger confetti and sound
+        const originalSubmitMatch = submitMatch;
+        submitMatch = async function () {
+            await originalSubmitMatch();
+            playSound('win');
+            launchConfetti();
+        };
+
+        // ==================== PWA SERVICE WORKER ====================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => { });
+            });
+        }
+
+        // PWA Install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Could show an install button here
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => {
+                    if (choice.outcome === 'accepted') {
+                        console.log('PWA installed');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
     </script>
 </body>
 
