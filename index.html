@@ -2373,16 +2373,15 @@
                 return Swal.fire('Faltan datos', 'Selecciona juego y al menos 2 jugadores', 'warning');
             }
 
+            // Don't include winner/scores - null values cause issues
             const match = {
                 game: g,
                 players: activePlayers,
-                notes: n,
-                played_date: d,
-                winner: null, // NULL = pending
-                scores: null
+                notes: n || '',
+                played_date: d
             };
 
-            const { data, error } = await sbClient.from('matches').insert([match]).select();
+            const { data, error } = await sbClient.from('matches').insert(match).select();
 
             if (error) {
                 return Swal.fire('Error', error.message, 'error');
