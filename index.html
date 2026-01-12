@@ -829,6 +829,12 @@
                 <button onclick="nav('achievements')"
                     class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
                     data-target="achievements"><i class="fas fa-medal w-5"></i> Logros</button>
+                <button onclick="nav('seasons')"
+                    class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
+                    data-target="seasons"><i class="fas fa-calendar w-5"></i> Temporadas</button>
+                <button onclick="nav('predictions')"
+                    class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
+                    data-target="predictions"><i class="fas fa-crystal-ball w-5"></i> Predicciones</button>
                 <button onclick="nav('history')"
                     class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
                     data-target="history"><i class="fas fa-history w-5"></i> Historial</button>
@@ -1125,6 +1131,90 @@
                         </button>
                     </div>
                     <div id="bracketContainer" class="overflow-x-auto pb-4"></div>
+                </div>
+            </section>
+
+            <!-- SEASONS SECTION -->
+            <section id="seasons" class="section">
+                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-emerald-400">📅</span>
+                    Temporadas</h2>
+
+                <div class="glass p-6 rounded-2xl mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-white flex items-center gap-2">
+                            <i class="fas fa-calendar text-emerald-400"></i> Temporada Actual
+                        </h3>
+                        <select id="seasonSelector" onchange="changeSeason()"
+                            class="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white">
+                        </select>
+                    </div>
+                    <div id="seasonStats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+                            <p class="text-2xl font-bold text-white" id="seasonMatches">0</p>
+                            <p class="text-xs text-slate-400">Partidas</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+                            <p class="text-2xl font-bold text-emerald-400" id="seasonMVP">-</p>
+                            <p class="text-xs text-slate-400">MVP</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+                            <p class="text-2xl font-bold text-neon-pink" id="seasonGame">-</p>
+                            <p class="text-xs text-slate-400">Juego Top</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+                            <p class="text-2xl font-bold text-neon-cyan" id="seasonDays">0</p>
+                            <p class="text-xs text-slate-400">Días Activos</p>
+                        </div>
+                    </div>
+                    <button onclick="closeSeason()"
+                        class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl font-bold text-white hover:opacity-90 transition-opacity">
+                        <i class="fas fa-flag-checkered mr-2"></i> CERRAR TEMPORADA
+                    </button>
+                </div>
+
+                <div class="glass p-5 rounded-2xl">
+                    <h3 class="font-bold text-slate-300 mb-4 flex items-center gap-2">
+                        <i class="fas fa-history text-slate-500"></i> Historial de Temporadas
+                    </h3>
+                    <div id="seasonHistory" class="space-y-3">
+                        <p class="text-slate-500 text-sm text-center py-4">Cargando...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PREDICTIONS SECTION -->
+            <section id="predictions" class="section">
+                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-purple-400">🔮</span>
+                    Predicciones</h2>
+                <p class="text-slate-400 text-sm mb-6">¡Votá quién creés que va a ganar antes de cada partida!</p>
+
+                <div id="activePrediction" class="hidden glass p-6 rounded-2xl mb-6 border-2 border-purple-500/50">
+                    <div class="flex items-center justify-between mb-4">
+                        <span
+                            class="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+                            🔴 VOTACIÓN ACTIVA
+                        </span>
+                        <span id="predictionGame" class="text-slate-400 text-sm"></span>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-4 text-center">¿Quién va a ganar?</h3>
+                    <div id="predictionPlayers" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+                    <div id="predictionVotes" class="mt-4 text-center text-sm text-slate-400"></div>
+                </div>
+
+                <div id="noPrediction" class="glass p-6 rounded-2xl text-center">
+                    <div class="text-4xl mb-4">🎱</div>
+                    <p class="text-slate-400">No hay predicciones activas.</p>
+                    <p class="text-xs text-slate-500 mt-2">Cuando alguien empiece a registrar una partida, podrás votar.
+                    </p>
+                </div>
+
+                <div class="glass p-5 rounded-2xl mt-6">
+                    <h3 class="font-bold text-slate-300 mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-purple-400"></i> Estadísticas de Predicciones
+                    </h3>
+                    <div id="predictionStats" class="space-y-3">
+                        <p class="text-slate-500 text-sm text-center py-4">Sin datos aún.</p>
+                    </div>
                 </div>
             </section>
 
@@ -1930,12 +2020,325 @@
             });
         }
 
-        // Update nav function to init tournament when visited
+        // Update nav function to init sections when visited
         const originalNav = nav;
         nav = function (target) {
             originalNav(target);
             if (target === 'tournament') initTournamentUI();
             if (target === 'achievements') renderAchievements();
+            if (target === 'seasons') renderSeasons();
+            if (target === 'predictions') renderPredictions();
+        };
+
+        // ==================== SEASONS SYSTEM ====================
+        let seasons = [];
+        let currentSeason = null;
+
+        async function loadSeasons() {
+            // Load seasons from localStorage (could be moved to Supabase)
+            const saved = localStorage.getItem('bgtracker_seasons');
+            if (saved) {
+                seasons = JSON.parse(saved);
+            }
+            if (seasons.length === 0) {
+                // Create first season
+                seasons.push({
+                    id: 1,
+                    name: 'Temporada 1',
+                    startDate: new Date().toISOString().split('T')[0],
+                    endDate: null,
+                    active: true
+                });
+                saveSeasons();
+            }
+            currentSeason = seasons.find(s => s.active) || seasons[seasons.length - 1];
+        }
+
+        function saveSeasons() {
+            localStorage.setItem('bgtracker_seasons', JSON.stringify(seasons));
+        }
+
+        function renderSeasons() {
+            loadSeasons();
+
+            // Populate season selector
+            const selector = document.getElementById('seasonSelector');
+            selector.innerHTML = seasons.map(s =>
+                `<option value="${s.id}" ${s.id === currentSeason?.id ? 'selected' : ''}>
+                    ${s.name} ${s.active ? '(Actual)' : ''}
+                </option>`
+            ).join('');
+
+            // Calculate stats for current season
+            const seasonStart = currentSeason?.startDate || '1970-01-01';
+            const seasonEnd = currentSeason?.endDate || '2999-12-31';
+
+            const seasonMatches = matches.filter(m => {
+                const date = m.played_date || m.created_at.split('T')[0];
+                return date >= seasonStart && date <= seasonEnd;
+            });
+
+            document.getElementById('seasonMatches').innerText = seasonMatches.length;
+
+            // MVP
+            const wins = {};
+            seasonMatches.forEach(m => { wins[m.winner] = (wins[m.winner] || 0) + 1; });
+            const mvp = Object.entries(wins).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('seasonMVP').innerText = mvp ? mvp[0] : '-';
+
+            // Top game
+            const games = {};
+            seasonMatches.forEach(m => { games[m.game] = (games[m.game] || 0) + 1; });
+            const topGame = Object.entries(games).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('seasonGame').innerText = topGame ? topGame[0] : '-';
+
+            // Active days
+            const uniqueDays = new Set(seasonMatches.map(m => m.played_date || m.created_at.split('T')[0]));
+            document.getElementById('seasonDays').innerText = uniqueDays.size;
+
+            // History
+            const historyDiv = document.getElementById('seasonHistory');
+            const closedSeasons = seasons.filter(s => !s.active);
+
+            if (closedSeasons.length === 0) {
+                historyDiv.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">No hay temporadas cerradas aún.</p>';
+            } else {
+                historyDiv.innerHTML = closedSeasons.reverse().map(s => {
+                    const sMatches = matches.filter(m => {
+                        const date = m.played_date || m.created_at.split('T')[0];
+                        return date >= s.startDate && date <= (s.endDate || '2999-12-31');
+                    });
+                    const sWins = {};
+                    sMatches.forEach(m => { sWins[m.winner] = (sWins[m.winner] || 0) + 1; });
+                    const sMvp = Object.entries(sWins).sort((a, b) => b[1] - a[1])[0];
+
+                    return `
+                        <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-white">${s.name}</span>
+                                <span class="text-xs text-slate-500">${s.startDate} → ${s.endDate}</span>
+                            </div>
+                            <div class="flex gap-4 text-sm">
+                                <span class="text-slate-400">Partidas: <b class="text-white">${sMatches.length}</b></span>
+                                <span class="text-slate-400">Campeón: <b class="text-yellow-400">${sMvp ? sMvp[0] : '-'}</b></span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function changeSeason() {
+            const selectedId = parseInt(document.getElementById('seasonSelector').value);
+            currentSeason = seasons.find(s => s.id === selectedId);
+            renderSeasons();
+        }
+
+        async function closeSeason() {
+            const result = await Swal.fire({
+                title: '¿Cerrar temporada?',
+                html: 'Se creará una nueva temporada y las estadísticas empezarán de cero.<br><br><input type="text" id="newSeasonName" class="swal2-input" placeholder="Nombre nueva temporada">',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Cerrar y Crear Nueva',
+                background: '#1e293b',
+                color: '#fff',
+                preConfirm: () => {
+                    return document.getElementById('newSeasonName').value || `Temporada ${seasons.length + 1}`;
+                }
+            });
+
+            if (result.isConfirmed) {
+                // Close current season
+                const current = seasons.find(s => s.active);
+                if (current) {
+                    current.active = false;
+                    current.endDate = new Date().toISOString().split('T')[0];
+                }
+
+                // Create new season
+                const newSeason = {
+                    id: seasons.length + 1,
+                    name: result.value,
+                    startDate: new Date().toISOString().split('T')[0],
+                    endDate: null,
+                    active: true
+                };
+                seasons.push(newSeason);
+                currentSeason = newSeason;
+                saveSeasons();
+
+                renderSeasons();
+                Swal.fire({ title: '¡Nueva temporada!', text: `${result.value} ha comenzado`, icon: 'success', background: '#1e293b', color: '#fff' });
+            }
+        }
+
+        // ==================== PREDICTIONS SYSTEM ====================
+        let activePrediction = null;
+        let predictions = {}; // { oderId: { game, players, votes: { voter: predicted } } }
+
+        function loadPredictions() {
+            const saved = localStorage.getItem('bgtracker_predictions');
+            if (saved) predictions = JSON.parse(saved);
+        }
+
+        function savePredictions() {
+            localStorage.setItem('bgtracker_predictions', JSON.stringify(predictions));
+        }
+
+        function startPrediction(game, players) {
+            const id = Date.now();
+            activePrediction = { id, game, players, votes: {} };
+            predictions[id] = activePrediction;
+            savePredictions();
+
+            // Broadcast to other users (using localStorage event)
+            localStorage.setItem('bgtracker_active_prediction', JSON.stringify(activePrediction));
+        }
+
+        function renderPredictions() {
+            loadPredictions();
+
+            // Check for active prediction from localStorage (cross-tab sync)
+            const active = localStorage.getItem('bgtracker_active_prediction');
+            if (active) {
+                activePrediction = JSON.parse(active);
+            }
+
+            if (activePrediction && !activePrediction.closed) {
+                document.getElementById('activePrediction').classList.remove('hidden');
+                document.getElementById('noPrediction').classList.add('hidden');
+                document.getElementById('predictionGame').innerText = activePrediction.game;
+
+                const playersDiv = document.getElementById('predictionPlayers');
+                const myVote = activePrediction.votes[currentUser?.name];
+
+                playersDiv.innerHTML = activePrediction.players.map(p => `
+                    <button onclick="votePrediction('${p}')" 
+                        class="p-3 rounded-lg text-center transition-all ${myVote === p ? 'bg-purple-600 text-white font-bold ring-2 ring-purple-400' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+                        ${p}
+                        ${myVote === p ? ' ✓' : ''}
+                    </button>
+                `).join('');
+
+                // Show vote counts
+                const voteCounts = {};
+                Object.values(activePrediction.votes).forEach(v => { voteCounts[v] = (voteCounts[v] || 0) + 1; });
+                const totalVotes = Object.keys(activePrediction.votes).length;
+
+                document.getElementById('predictionVotes').innerHTML = totalVotes > 0 ?
+                    `${totalVotes} voto${totalVotes > 1 ? 's' : ''}: ` +
+                    Object.entries(voteCounts).map(([p, c]) => `${p}: ${c}`).join(', ') :
+                    'Nadie votó aún';
+            } else {
+                document.getElementById('activePrediction').classList.add('hidden');
+                document.getElementById('noPrediction').classList.remove('hidden');
+            }
+
+            // Stats
+            renderPredictionStats();
+        }
+
+        function votePrediction(player) {
+            if (!activePrediction || !currentUser) return;
+            activePrediction.votes[currentUser.name] = player;
+            predictions[activePrediction.id] = activePrediction;
+            savePredictions();
+            localStorage.setItem('bgtracker_active_prediction', JSON.stringify(activePrediction));
+            renderPredictions();
+        }
+
+        function closePrediction(winner) {
+            if (!activePrediction) return;
+            activePrediction.closed = true;
+            activePrediction.actualWinner = winner;
+            predictions[activePrediction.id] = activePrediction;
+            savePredictions();
+            localStorage.removeItem('bgtracker_active_prediction');
+            activePrediction = null;
+        }
+
+        function renderPredictionStats() {
+            const statsDiv = document.getElementById('predictionStats');
+            const allPreds = Object.values(predictions).filter(p => p.closed);
+
+            if (allPreds.length === 0) {
+                statsDiv.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Sin datos aún.</p>';
+                return;
+            }
+
+            // Calculate accuracy per player
+            const accuracy = {};
+            allPreds.forEach(pred => {
+                Object.entries(pred.votes).forEach(([voter, voted]) => {
+                    if (!accuracy[voter]) accuracy[voter] = { correct: 0, total: 0 };
+                    accuracy[voter].total++;
+                    if (voted === pred.actualWinner) accuracy[voter].correct++;
+                });
+            });
+
+            const sorted = Object.entries(accuracy)
+                .map(([name, stats]) => ({ name, ...stats, rate: (stats.correct / stats.total * 100).toFixed(0) }))
+                .sort((a, b) => b.rate - a.rate);
+
+            statsDiv.innerHTML = sorted.map((s, i) => `
+                <div class="flex justify-between items-center p-3 bg-slate-800/50 rounded-lg">
+                    <span class="text-white">${i === 0 ? '🎯 ' : ''}${s.name}</span>
+                    <span class="text-purple-400 font-bold">${s.rate}% (${s.correct}/${s.total})</span>
+                </div>
+            `).join('');
+        }
+
+        // Listen for cross-tab prediction updates
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'bgtracker_active_prediction') {
+                renderPredictions();
+            }
+        });
+
+        // ==================== PUSH NOTIFICATIONS ====================
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) return false;
+
+            if (Notification.permission === 'granted') return true;
+            if (Notification.permission !== 'denied') {
+                const permission = await Notification.requestPermission();
+                return permission === 'granted';
+            }
+            return false;
+        }
+
+        function showNotification(title, body, icon = '🎲') {
+            if (Notification.permission === 'granted') {
+                new Notification(title, {
+                    body,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">' + icon + '</text></svg>',
+                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🎮</text></svg>'
+                });
+            }
+        }
+
+        // Request permission on first login
+        const originalEnterApp = enterApp;
+        enterApp = async function () {
+            await originalEnterApp();
+            requestNotificationPermission();
+        };
+
+        // Show notification when new match is added (via realtime)
+        const originalSetupRealtime = setupRealtime;
+        setupRealtime = function () {
+            originalSetupRealtime();
+
+            sbClient.channel('matches-notifications')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'matches' }, (payload) => {
+                    const m = payload.new;
+                    // Don't notify for own matches
+                    if (m.winner !== currentUser?.name) {
+                        showNotification('¡Nueva partida!', `${m.winner} ganó en ${m.game}`, '🏆');
+                    }
+                })
+                .subscribe();
         };
     </script>
 </body>
