@@ -1913,7 +1913,7 @@
             const pl = { game: g, winner: w, players: activePlayers, notes: n, scores: Object.keys(sc).length ? sc : null, played_date: d };
 
             if (eid) await sbClient.from('matches').update(pl).eq('id', eid);
-            else await sbClient.from('matches').insert([pl]);
+            else await sbClient.from('matches').insert([pl]).select();
 
             // Close prediction with actual winner
             closePrediction(w);
