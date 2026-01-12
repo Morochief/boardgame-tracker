@@ -973,11 +973,12 @@
         function verifyUserPin() {
             const pin = getPinFromContainer('userPinContainer');
             if (simpleHash(pin) === pendingProfile.pin) {
-                closePinModal();
-                console.log('PIN verified. Pending:', pendingProfile);
+                // Fix: Assign currentUser BEFORE clearing pendingProfile
                 currentUser = pendingProfile;
-                console.log('Set currentUser to:', currentUser);
+                console.log('PIN verified. Setting user:', currentUser);
+
                 sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                closePinModal(); // Now safe to close and clear
                 enterApp();
             } else {
                 document.getElementById('pinError').classList.remove('hidden');
