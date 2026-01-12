@@ -622,7 +622,8 @@
         <div class="bg-orb w-64 h-64 bg-purple-600 top-0 left-0"></div>
         <div class="bg-orb w-96 h-96 bg-cyan-600 bottom-0 right-0" style="animation-delay: -5s"></div>
         <div id="currentUserBadge" onclick="logout()" class="current-user-badge glass" title="Cambiar perfil">
-            <div id="currentUserAvatar" class="w-8 h-8 rounded-lg flex items-center justify-center text-lg"></div><span
+            <div id="currentUserAvatar"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-lg bg-red-500 text-white">?</div><span
                 id="currentUserName" class="text-sm text-slate-300 hidden md:inline"></span><i
                 class="fas fa-sign-out-alt text-slate-500 text-sm"></i>
         </div>
@@ -1003,12 +1004,21 @@
             await loadAllData(); setupRealtime(); nav('dashboard');
         }
         function updateCurrentUserBadge() {
-            if (!currentUser) return;
             const av = document.getElementById('currentUserAvatar');
             if (!av) return;
+
+            if (!currentUser) {
+                console.error('CRITICAL: currentUser is null in updateCurrentUserBadge');
+                av.innerHTML = '❌';
+                av.style.backgroundColor = 'red';
+                document.getElementById('currentUserName').innerText = 'Error';
+                return;
+            }
+
+            console.log('Rendering for user:', currentUser);
             document.getElementById('currentUserName').innerText = currentUser.name || 'Usuario';
 
-            // Force styles manually to ensure visibility
+            // Force styles manually
             av.style.width = '32px';
             av.style.height = '32px';
             av.style.display = 'flex';
@@ -1017,6 +1027,9 @@
             av.style.borderRadius = '8px';
             av.style.position = 'relative';
 
+            // Force Font
+            av.style.fontFamily = '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif';
+
             // Apply color class but also fallback background
             const color = currentUser.color || 'violet';
             av.className = `text-lg text-white font-bold avatar-${color}`;
@@ -1024,6 +1037,8 @@
             const emoji = currentUser.emoji || '😀';
             const observerHtml = currentUser.isObserver ? '<div style="position:absolute; top:-4px; right:-4px; font-size:10px; background:rgba(0,0,0,0.5); border-radius:50%; padding:2px;">👁️</div>' : '';
 
+            // Log what we are injecting
+            console.log('Injecting HTML:', emoji + observerHtml);
             av.innerHTML = emoji + observerHtml;
         }
         function applyObserverRestrictions() {
