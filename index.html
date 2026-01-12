@@ -622,8 +622,7 @@
         <div class="bg-orb w-64 h-64 bg-purple-600 top-0 left-0"></div>
         <div class="bg-orb w-96 h-96 bg-cyan-600 bottom-0 right-0" style="animation-delay: -5s"></div>
         <div id="currentUserBadge" onclick="logout()" class="current-user-badge glass" title="Cambiar perfil">
-            <div id="currentUserAvatar"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-lg bg-red-500 text-white">?</div><span
+            <div id="currentUserAvatar" class="w-8 h-8 rounded-lg flex items-center justify-center text-lg"></div><span
                 id="currentUserName" class="text-sm text-slate-300 hidden md:inline"></span><i
                 class="fas fa-sign-out-alt text-slate-500 text-sm"></i>
         </div>
@@ -919,10 +918,8 @@
                         const saved = JSON.parse(savedUser);
                         if (saved && saved.id) {
                             const found = profiles.find(p => p.id === saved.id);
-                            console.log('Session check:', { savedId: saved.id, found: !!found, globalUserBefore: currentUser });
                             if (found) {
                                 currentUser = found;
-                                console.log('Setting currentUser:', currentUser);
                                 updateCurrentUserBadge();
                                 await enterApp();
                             }
@@ -975,7 +972,6 @@
             if (simpleHash(pin) === pendingProfile.pin) {
                 // Fix: Assign currentUser BEFORE clearing pendingProfile
                 currentUser = pendingProfile;
-                console.log('PIN verified. Setting user:', currentUser);
 
                 sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
                 closePinModal(); // Now safe to close and clear
@@ -1026,42 +1022,19 @@
         }
         function updateCurrentUserBadge() {
             const av = document.getElementById('currentUserAvatar');
-            if (!av) return;
+            if (!av || !currentUser) return;
 
-            if (!currentUser) {
-                console.error('CRITICAL: currentUser is null in updateCurrentUserBadge');
-                console.trace('Who called me with null user?');
-                av.innerHTML = '❌';
-                av.style.backgroundColor = 'red';
-                document.getElementById('currentUserName').innerText = 'Error';
-                return;
-            }
-
-            console.log('Rendering for user:', currentUser);
             document.getElementById('currentUserName').innerText = currentUser.name || 'Usuario';
 
-            // Force styles manually
-            av.style.width = '32px';
-            av.style.height = '32px';
-            av.style.display = 'flex';
-            av.style.alignItems = 'center';
-            av.style.justifyContent = 'center';
-            av.style.borderRadius = '8px';
-            av.style.position = 'relative';
-
-            // Force Font
-            av.style.fontFamily = '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif';
-
-            // Apply color class but also fallback background
+            // Restore class-based styling
             const color = currentUser.color || 'violet';
-            av.className = `text-lg text-white font-bold avatar-${color}`;
+            av.className = `w-8 h-8 rounded-lg flex items-center justify-center text-lg text-white font-bold avatar-${color} relative`;
+            av.removeAttribute('style'); // Clear forced debug styles
 
             const emoji = currentUser.emoji || '😀';
-            const observerHtml = currentUser.isObserver ? '<div style="position:absolute; top:-4px; right:-4px; font-size:10px; background:rgba(0,0,0,0.5); border-radius:50%; padding:2px;">👁️</div>' : '';
+            const observerHtml = currentUser.isObserver ? '<div class="absolute -top-1 -right-1 text-[10px] bg-black/50 rounded-full w-4 h-4 flex items-center justify-center backdrop-blur-sm border border-white/20">👁️</div>' : '';
 
-            // Log what we are injecting
-            console.log('Injecting HTML:', emoji + observerHtml);
-            av.innerHTML = emoji + observerHtml;
+            av.innerHTML = `<span>${emoji}</span>${observerHtml}`;
         }
         function applyObserverRestrictions() {
             const isObs = currentUser && currentUser.isObserver;
