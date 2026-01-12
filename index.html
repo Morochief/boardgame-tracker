@@ -1,106 +1,489 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🎲 Boardgame Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+
     <script>
         tailwind.config = { theme: { extend: { fontFamily: { 'gaming': ['Orbitron', 'sans-serif'], 'body': ['Inter', 'sans-serif'] }, colors: { 'neon-violet': '#a855f7', 'neon-cyan': '#22d3ee', 'neon-pink': '#ec4899', 'neon-red': '#ef4444', 'dark-bg': '#0f172a' } } } }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .glass-danger { background: rgba(69, 10, 10, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(239, 68, 68, 0.3); }
-        .glass-success { background: rgba(6, 78, 59, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(16, 185, 129, 0.3); }
-        .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.2; z-index: 0; animation: float 10s ease-in-out infinite; }
-        .section { display: none; opacity: 0; transition: opacity 0.3s ease; }
-        .section.active { display: block; opacity: 1; }
-        .nav-btn.active { color: #22d3ee; background: rgba(34, 211, 238, 0.1); }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: #a855f7; box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2); }
-        .swal2-popup { background: #1e293b !important; border: 1px solid #334155 !important; color: #fff !important; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-danger {
+            background: rgba(69, 10, 10, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .glass-success {
+            background: rgba(6, 78, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.2;
+            z-index: 0;
+            animation: float 10s ease-in-out infinite;
+        }
+
+        .section {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .section.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .nav-btn.active {
+            color: #22d3ee;
+            background: rgba(34, 211, 238, 0.1);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #a855f7;
+            box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+        }
+
+        .swal2-popup {
+            background: #1e293b !important;
+            border: 1px solid #334155 !important;
+            color: #fff !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
         /* LOGIN & PROFILE STYLES */
-        #loginScreen { position: fixed; inset: 0; z-index: 100; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
-        #loginScreen.hidden { display: none; }
-        .profile-card { width: 120px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .profile-card:hover { transform: scale(1.1); }
-        .profile-card:hover .profile-avatar { border-color: #a855f7; box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
-        .profile-card:hover .profile-name { color: #fff; }
-        .profile-avatar { width: 100px; height: 100px; border-radius: 12px; border: 3px solid transparent; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 3rem; transition: all 0.3s ease; position: relative; overflow: hidden; }
-        .profile-avatar.has-lock::after { content: '🔒'; position: absolute; bottom: 4px; right: 4px; font-size: 1rem; background: rgba(0,0,0,0.7); border-radius: 4px; padding: 2px 4px; }
-        .profile-avatar.is-observer::after { content: '👁️'; position: absolute; top: 4px; left: 4px; font-size: 1rem; background: rgba(0,0,0,0.7); border-radius: 4px; padding: 2px 4px; }
-        .glass-admin { background: rgba(234, 179, 8, 0.1); backdrop-filter: blur(12px); border: 1px solid rgba(234, 179, 8, 0.3); }
-        .profile-name { text-align: center; font-weight: 600; color: #94a3b8; font-size: 0.9rem; transition: color 0.3s ease; }
-        .add-profile-card .profile-avatar { border: 3px dashed #475569; background: transparent; }
-        .add-profile-card:hover .profile-avatar { border-color: #22d3ee; box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); }
-        
+        #loginScreen {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        #loginScreen.hidden {
+            display: none;
+        }
+
+        .profile-card {
+            width: 120px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .profile-card:hover {
+            transform: scale(1.1);
+        }
+
+        .profile-card:hover .profile-avatar {
+            border-color: #a855f7;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+        }
+
+        .profile-card:hover .profile-name {
+            color: #fff;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            border: 3px solid transparent;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-avatar.has-lock::after {
+            content: '🔒';
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            font-size: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+
+        .profile-avatar.is-observer::after {
+            content: '👁️';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            font-size: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+
+        .glass-admin {
+            background: rgba(234, 179, 8, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+
+        .profile-name {
+            text-align: center;
+            font-weight: 600;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .add-profile-card .profile-avatar {
+            border: 3px dashed #475569;
+            background: transparent;
+        }
+
+        .add-profile-card:hover .profile-avatar {
+            border-color: #22d3ee;
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3);
+        }
+
         /* PIN Styles */
-        .pin-container { display: flex; gap: 12px; justify-content: center; margin: 20px 0; }
-        .pin-digit { width: 60px; height: 70px; background: rgba(30, 41, 59, 0.8); border: 2px solid #475569; border-radius: 12px; font-size: 2rem; font-family: 'Orbitron', sans-serif; color: #fff; text-align: center; transition: all 0.2s ease; }
-        .pin-digit:focus { border-color: #a855f7; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); transform: scale(1.05); }
-        .pin-digit.filled { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; }
-        .pin-digit.error { border-color: #ef4444; animation: shake 0.5s ease; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
-        
+        .pin-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .pin-digit {
+            width: 60px;
+            height: 70px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid #475569;
+            border-radius: 12px;
+            font-size: 2rem;
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .pin-digit:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+            transform: scale(1.05);
+        }
+
+        .pin-digit.filled {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: #a855f7;
+        }
+
+        .pin-digit.error {
+            border-color: #ef4444;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
         /* Avatars */
-        .avatar-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        .avatar-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
-        .avatar-yellow { background: linear-gradient(135deg, #eab308, #ca8a04); }
-        .avatar-green { background: linear-gradient(135deg, #22c55e, #16a34a); }
-        .avatar-cyan { background: linear-gradient(135deg, #22d3ee, #06b6d4); }
-        .avatar-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .avatar-violet { background: linear-gradient(135deg, #a855f7, #9333ea); }
-        .avatar-pink { background: linear-gradient(135deg, #ec4899, #db2777); }
-        .avatar-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
-        .avatar-option { width: 60px; height: 60px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; border: 3px solid transparent; transition: all 0.2s ease; }
-        .avatar-option:hover { transform: scale(1.1); }
-        .avatar-option.selected { border-color: #fff; box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
-        .color-selector { display: flex; gap: 8px; justify-content: center; margin: 15px 0; flex-wrap: wrap; }
-        .color-option { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.2s ease; }
-        .color-option:hover { transform: scale(1.15); }
-        .color-option.selected { border-color: #fff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
-        
+        .avatar-red {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .avatar-orange {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+        }
+
+        .avatar-yellow {
+            background: linear-gradient(135deg, #eab308, #ca8a04);
+        }
+
+        .avatar-green {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+
+        .avatar-cyan {
+            background: linear-gradient(135deg, #22d3ee, #06b6d4);
+        }
+
+        .avatar-blue {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .avatar-violet {
+            background: linear-gradient(135deg, #a855f7, #9333ea);
+        }
+
+        .avatar-pink {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+        }
+
+        .avatar-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .avatar-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .avatar-option:hover {
+            transform: scale(1.1);
+        }
+
+        .avatar-option.selected {
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .color-selector {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.15);
+        }
+
+        .color-option.selected {
+            border-color: #fff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+
         /* App Styles */
-        .mvp-card { background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(168, 85, 247, 0.15)); border: 1px solid rgba(34, 211, 238, 0.3); position: relative; overflow: hidden; }
-        .mvp-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, rgba(34, 211, 238, 0.1), transparent 30%); animation: rotate 4s linear infinite; }
-        @keyframes rotate { 100% { transform: rotate(360deg); } }
-        .game-card { background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(168, 85, 247, 0.15)); border: 1px solid rgba(236, 72, 153, 0.3); }
-        .rank-badge { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; }
-        .rank-1 { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-        .rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #000; }
-        .rank-3 { background: linear-gradient(135deg, #cd7f32, #a0522d); color: #fff; }
-        .rank-other { background: #334155; color: #94a3b8; }
-        .expand-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .expand-content.expanded { max-height: 500px; }
-        .edit-mode { border-color: #f59e0b !important; box-shadow: 0 0 20px rgba(245, 158, 11, 0.2) !important; }
-        .current-user-badge { position: fixed; top: 70px; right: 10px; z-index: 45; display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; }
-        .current-user-badge:hover { background: rgba(168, 85, 247, 0.2); }
-        @media (min-width: 768px) { .current-user-badge { top: 20px; right: 20px; } }
-        .observer-hidden { display: none !important; }
+        .mvp-card {
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(168, 85, 247, 0.15));
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mvp-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, rgba(34, 211, 238, 0.1), transparent 30%);
+            animation: rotate 4s linear infinite;
+        }
+
+        @keyframes rotate {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .game-card {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(168, 85, 247, 0.15));
+            border: 1px solid rgba(236, 72, 153, 0.3);
+        }
+
+        .rank-badge {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .rank-1 {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #000;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
+            color: #000;
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #cd7f32, #a0522d);
+            color: #fff;
+        }
+
+        .rank-other {
+            background: #334155;
+            color: #94a3b8;
+        }
+
+        .expand-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .expand-content.expanded {
+            max-height: 500px;
+        }
+
+        .edit-mode {
+            border-color: #f59e0b !important;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.2) !important;
+        }
+
+        .current-user-badge {
+            position: fixed;
+            top: 70px;
+            right: 10px;
+            z-index: 45;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .current-user-badge:hover {
+            background: rgba(168, 85, 247, 0.2);
+        }
+
+        @media (min-width: 768px) {
+            .current-user-badge {
+                top: 20px;
+                right: 20px;
+            }
+        }
+
+        .observer-hidden {
+            display: none !important;
+        }
     </style>
 </head>
+
 <body class="min-h-screen">
 
-    <div id="adminSetupScreen" class="fixed inset-0 z-[200] bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 hidden flex items-center justify-center p-4">
+    <div id="adminSetupScreen"
+        class="fixed inset-0 z-[200] bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 hidden flex items-center justify-center p-4">
         <div class="glass-admin rounded-3xl p-8 max-w-md w-full text-center relative z-10">
-            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-6"><i class="fas fa-shield-alt text-4xl text-white"></i></div>
+            <div
+                class="w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-shield-alt text-4xl text-white"></i></div>
             <h2 class="font-gaming text-2xl text-yellow-400 mb-2">Configuración Inicial</h2>
-            <p class="text-slate-400 text-sm mb-6">Creá tu PIN de Administrador.<br><strong class="text-yellow-300">¡Guardalo bien!</strong></p>
-            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase">PIN Admin (4 dígitos)</label><div class="pin-container" id="adminSetupPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div></div>
-            <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase">Confirmar PIN</label><div class="pin-container" id="adminConfirmPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div></div>
+            <p class="text-slate-400 text-sm mb-6">Creá tu PIN de Administrador.<br><strong
+                    class="text-yellow-300">¡Guardalo bien!</strong></p>
+            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase">PIN Admin (4 dígitos)</label>
+                <div class="pin-container" id="adminSetupPinContainer"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="3" inputmode="numeric"></div>
+            </div>
+            <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase">Confirmar PIN</label>
+                <div class="pin-container" id="adminConfirmPinContainer"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="3" inputmode="numeric"></div>
+            </div>
             <p id="adminSetupError" class="text-red-400 text-sm mb-4 hidden"></p>
-            <button onclick="saveAdminPin()" class="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform"><i class="fas fa-lock mr-2"></i>GUARDAR PIN ADMIN</button>
+            <button onclick="saveAdminPin()"
+                class="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform"><i
+                    class="fas fa-lock mr-2"></i>GUARDAR PIN ADMIN</button>
         </div>
     </div>
 
@@ -109,101 +492,261 @@
         <div class="bg-orb w-96 h-96 bg-cyan-600 bottom-0 right-0" style="animation-delay: -5s"></div>
         <div class="relative z-10 w-full max-w-3xl">
             <div class="text-center mb-12">
-                <div class="inline-flex items-center gap-3 mb-4"><div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-violet to-neon-cyan flex items-center justify-center"><i class="fas fa-dice-d20 text-3xl text-white"></i></div></div>
-                <h1 class="font-gaming text-3xl md:text-4xl bg-gradient-to-r from-neon-cyan to-neon-violet bg-clip-text text-transparent">BOARDGAME TRACKER</h1>
+                <div class="inline-flex items-center gap-3 mb-4">
+                    <div
+                        class="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-violet to-neon-cyan flex items-center justify-center">
+                        <i class="fas fa-dice-d20 text-3xl text-white"></i></div>
+                </div>
+                <h1
+                    class="font-gaming text-3xl md:text-4xl bg-gradient-to-r from-neon-cyan to-neon-violet bg-clip-text text-transparent">
+                    BOARDGAME TRACKER</h1>
                 <p class="text-slate-400 mt-2">¿Quién está jugando?</p>
             </div>
             <div id="profilesGrid" class="flex flex-wrap justify-center gap-6 md:gap-8"></div>
-            <div class="text-center mt-12"><button id="btnManageProfiles" onclick="requestAdminAccess()" class="text-yellow-400/70 hover:text-yellow-400 text-sm border border-yellow-500/30 px-6 py-2 rounded-full hover:border-yellow-500/60 transition-all hover:bg-yellow-500/10"><i class="fas fa-shield-alt mr-2"></i>Administrar perfiles</button></div>
+            <div class="text-center mt-12"><button id="btnManageProfiles" onclick="requestAdminAccess()"
+                    class="text-yellow-400/70 hover:text-yellow-400 text-sm border border-yellow-500/30 px-6 py-2 rounded-full hover:border-yellow-500/60 transition-all hover:bg-yellow-500/10"><i
+                        class="fas fa-shield-alt mr-2"></i>Administrar perfiles</button></div>
         </div>
     </div>
 
-    <div id="adminPinModal" class="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div id="adminPinModal"
+        class="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="glass-admin rounded-3xl p-8 max-w-sm w-full text-center">
-            <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-4"><i class="fas fa-shield-alt text-2xl text-white"></i></div>
+            <div
+                class="w-16 h-16 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-shield-alt text-2xl text-white"></i></div>
             <h3 class="font-gaming text-xl text-yellow-400 mb-2">Acceso Admin</h3>
-            <div class="pin-container" id="adminPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div>
+            <div class="pin-container" id="adminPinContainer"><input type="password" maxlength="1" class="pin-digit"
+                    data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit"
+                    data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit"
+                    data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit"
+                    data-index="3" inputmode="numeric"></div>
             <p id="adminPinError" class="text-red-400 text-sm mt-4 hidden">PIN incorrecto</p>
-            <button onclick="closeAdminPinModal()" class="mt-6 text-slate-400 hover:text-white text-sm"><i class="fas fa-arrow-left mr-2"></i>Cancelar</button>
+            <button onclick="closeAdminPinModal()" class="mt-6 text-slate-400 hover:text-white text-sm"><i
+                    class="fas fa-arrow-left mr-2"></i>Cancelar</button>
         </div>
     </div>
 
-    <div id="pinModal" class="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div id="pinModal"
+        class="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="glass rounded-3xl p-8 max-w-sm w-full text-center">
-            <div id="pinAvatar" class="w-24 h-24 rounded-xl mx-auto mb-4 flex items-center justify-center text-4xl"></div>
+            <div id="pinAvatar" class="w-24 h-24 rounded-xl mx-auto mb-4 flex items-center justify-center text-4xl">
+            </div>
             <h3 id="pinUserName" class="font-gaming text-xl text-white mb-2"></h3>
-            <div class="pin-container" id="userPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div>
+            <div class="pin-container" id="userPinContainer"><input type="password" maxlength="1" class="pin-digit"
+                    data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit"
+                    data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit"
+                    data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit"
+                    data-index="3" inputmode="numeric"></div>
             <p id="pinError" class="text-red-400 text-sm mt-4 hidden">PIN incorrecto</p>
-            <button onclick="closePinModal()" class="mt-6 text-slate-400 hover:text-white text-sm"><i class="fas fa-arrow-left mr-2"></i>Volver</button>
+            <button onclick="closePinModal()" class="mt-6 text-slate-400 hover:text-white text-sm"><i
+                    class="fas fa-arrow-left mr-2"></i>Volver</button>
         </div>
     </div>
 
-    <div id="setupPinModal" class="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div id="setupPinModal"
+        class="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="glass rounded-3xl p-8 max-w-md w-full text-center">
-            <div id="setupPinAvatar" class="w-20 h-20 rounded-xl mx-auto mb-4 flex items-center justify-center text-4xl"></div>
+            <div id="setupPinAvatar"
+                class="w-20 h-20 rounded-xl mx-auto mb-4 flex items-center justify-center text-4xl"></div>
             <h3 class="font-gaming text-xl text-neon-cyan mb-2">¡Bienvenido!</h3>
             <p class="text-slate-400 text-sm mb-6">Creá tu PIN personal.</p>
-            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase">Crear PIN</label><div class="pin-container" id="setupPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div></div>
-            <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase">Confirmar PIN</label><div class="pin-container" id="confirmPinContainer"><input type="password" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric"></div></div>
+            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase">Crear PIN</label>
+                <div class="pin-container" id="setupPinContainer"><input type="password" maxlength="1" class="pin-digit"
+                        data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit"
+                        data-index="1" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit"
+                        data-index="2" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit"
+                        data-index="3" inputmode="numeric"></div>
+            </div>
+            <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase">Confirmar PIN</label>
+                <div class="pin-container" id="confirmPinContainer"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="0" inputmode="numeric"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="1" inputmode="numeric"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="2" inputmode="numeric"><input type="password" maxlength="1"
+                        class="pin-digit" data-index="3" inputmode="numeric"></div>
+            </div>
             <p id="setupPinError" class="text-red-400 text-sm mb-4 hidden"></p>
-            <button onclick="savePersonalPin()" class="w-full py-4 bg-gradient-to-r from-neon-violet to-neon-cyan rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform mb-3"><i class="fas fa-lock mr-2"></i>GUARDAR PIN</button>
-            <button onclick="skipPersonalPin()" class="text-slate-500 hover:text-slate-300 text-xs">Omitir (sin protección)</button>
+            <button onclick="savePersonalPin()"
+                class="w-full py-4 bg-gradient-to-r from-neon-violet to-neon-cyan rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform mb-3"><i
+                    class="fas fa-lock mr-2"></i>GUARDAR PIN</button>
+            <button onclick="skipPersonalPin()" class="text-slate-500 hover:text-slate-300 text-xs">Omitir (sin
+                protección)</button>
         </div>
     </div>
 
-    <div id="editProfileModal" class="fixed inset-0 z-[160] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div id="editProfileModal"
+        class="fixed inset-0 z-[160] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="glass-admin rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6"><h3 id="editProfileTitle" class="font-gaming text-xl text-yellow-400">Nuevo Perfil</h3><button onclick="closeEditProfileModal()" class="text-slate-400 hover:text-white"><i class="fas fa-times text-xl"></i></button></div>
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="editProfileTitle" class="font-gaming text-xl text-yellow-400">Nuevo Perfil</h3><button
+                    onclick="closeEditProfileModal()" class="text-slate-400 hover:text-white"><i
+                        class="fas fa-times text-xl"></i></button>
+            </div>
             <input type="hidden" id="editProfileId" value="">
-            <div class="text-center mb-6"><div id="previewAvatar" class="w-20 h-20 rounded-xl mx-auto mb-2 flex items-center justify-center text-4xl avatar-violet">😀</div></div>
-            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Nombre</label><input type="text" id="profileNameInput" placeholder="Nombre" maxlength="15" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"></div>
-            <div class="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl mb-4 border border-slate-700"><input type="checkbox" id="profileIsObserver" class="w-5 h-5 accent-yellow-500 rounded cursor-pointer"><label for="profileIsObserver" class="text-sm text-slate-300 cursor-pointer select-none flex-1">Modo Observador (Solo Lectura) 👁️</label></div>
-            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Avatar</label><div class="avatar-selector" id="emojiSelector"></div></div>
-            <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Color</label><div class="color-selector" id="colorSelector"></div></div>
-            <div class="flex gap-3"><button onclick="closeEditProfileModal()" class="flex-1 py-3 border border-slate-600 rounded-xl text-slate-300 hover:bg-slate-800 transition-colors">Cancelar</button><button onclick="saveProfile()" class="flex-1 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl font-bold text-black hover:opacity-90 transition-opacity">Guardar</button></div>
-            <div id="adminProfileActions" class="hidden mt-4 space-y-2"><button onclick="resetUserPin()" class="w-full py-3 border border-blue-500/50 text-blue-400 rounded-xl hover:bg-blue-500/20 transition-colors">Resetear PIN</button><button onclick="deleteProfile()" class="w-full py-3 border border-red-500/50 text-red-400 rounded-xl hover:bg-red-500/20 transition-colors">Eliminar perfil</button></div>
+            <div class="text-center mb-6">
+                <div id="previewAvatar"
+                    class="w-20 h-20 rounded-xl mx-auto mb-2 flex items-center justify-center text-4xl avatar-violet">😀
+                </div>
+            </div>
+            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Nombre</label><input
+                    type="text" id="profileNameInput" placeholder="Nombre" maxlength="15"
+                    class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"></div>
+            <div class="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl mb-4 border border-slate-700"><input
+                    type="checkbox" id="profileIsObserver"
+                    class="w-5 h-5 accent-yellow-500 rounded cursor-pointer"><label for="profileIsObserver"
+                    class="text-sm text-slate-300 cursor-pointer select-none flex-1">Modo Observador (Solo Lectura)
+                    👁️</label></div>
+            <div class="mb-4"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Avatar</label>
+                <div class="avatar-selector" id="emojiSelector"></div>
+            </div>
+            <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Color</label>
+                <div class="color-selector" id="colorSelector"></div>
+            </div>
+            <div class="flex gap-3"><button onclick="closeEditProfileModal()"
+                    class="flex-1 py-3 border border-slate-600 rounded-xl text-slate-300 hover:bg-slate-800 transition-colors">Cancelar</button><button
+                    onclick="saveProfile()"
+                    class="flex-1 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl font-bold text-black hover:opacity-90 transition-opacity">Guardar</button>
+            </div>
+            <div id="adminProfileActions" class="hidden mt-4 space-y-2"><button onclick="resetUserPin()"
+                    class="w-full py-3 border border-blue-500/50 text-blue-400 rounded-xl hover:bg-blue-500/20 transition-colors">Resetear
+                    PIN</button><button onclick="deleteProfile()"
+                    class="w-full py-3 border border-red-500/50 text-red-400 rounded-xl hover:bg-red-500/20 transition-colors">Eliminar
+                    perfil</button></div>
         </div>
     </div>
 
     <div id="mainApp" class="hidden pb-24 md:pb-0 md:pl-64 min-h-screen">
         <div class="bg-orb w-64 h-64 bg-purple-600 top-0 left-0"></div>
         <div class="bg-orb w-96 h-96 bg-cyan-600 bottom-0 right-0" style="animation-delay: -5s"></div>
-        <div id="currentUserBadge" onclick="logout()" class="current-user-badge glass" title="Cambiar perfil"><div id="currentUserAvatar" class="w-8 h-8 rounded-lg flex items-center justify-center text-lg"></div><span id="currentUserName" class="text-sm text-slate-300 hidden md:inline"></span><i class="fas fa-sign-out-alt text-slate-500 text-sm"></i></div>
-        
+        <div id="currentUserBadge" onclick="logout()" class="current-user-badge glass" title="Cambiar perfil">
+            <div id="currentUserAvatar" class="w-8 h-8 rounded-lg flex items-center justify-center text-lg"></div><span
+                id="currentUserName" class="text-sm text-slate-300 hidden md:inline"></span><i
+                class="fas fa-sign-out-alt text-slate-500 text-sm"></i>
+        </div>
+
         <header class="md:hidden glass sticky top-0 z-50 p-4 flex justify-between items-center">
-            <div class="flex items-center gap-2"><i class="fas fa-dice-d20 text-neon-cyan text-xl"></i><h1 class="font-gaming font-bold text-lg bg-gradient-to-r from-neon-cyan to-neon-violet bg-clip-text text-transparent">BG TRACKER</h1></div>
+            <div class="flex items-center gap-2"><i class="fas fa-dice-d20 text-neon-cyan text-xl"></i>
+                <h1
+                    class="font-gaming font-bold text-lg bg-gradient-to-r from-neon-cyan to-neon-violet bg-clip-text text-transparent">
+                    BG TRACKER</h1>
+            </div>
             <div id="statusIndicator" class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_red]"></div>
         </header>
 
         <nav class="hidden md:flex fixed left-0 top-0 h-full w-64 glass flex-col p-6 z-40 border-r border-slate-800">
-            <div class="flex items-center gap-3 mb-10"><div class="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-violet to-neon-cyan flex items-center justify-center"><i class="fas fa-dice-d20 text-white"></i></div><div><h1 class="font-gaming font-bold text-lg">BG TRACKER</h1><p id="desktopStatus" class="text-[10px] text-red-400">● Desconectado</p></div></div>
+            <div class="flex items-center gap-3 mb-10">
+                <div
+                    class="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-violet to-neon-cyan flex items-center justify-center">
+                    <i class="fas fa-dice-d20 text-white"></i></div>
+                <div>
+                    <h1 class="font-gaming font-bold text-lg">BG TRACKER</h1>
+                    <p id="desktopStatus" class="text-[10px] text-red-400">● Desconectado</p>
+                </div>
+            </div>
             <div class="flex flex-col gap-2">
-                <button onclick="nav('dashboard')" class="nav-btn active flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="dashboard"><i class="fas fa-chart-pie w-5"></i> Dashboard</button>
-                <button onclick="nav('analytics')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="analytics"><i class="fas fa-chart-line w-5"></i> Analytics</button>
-                <button onclick="nav('justice')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="justice"><i class="fas fa-balance-scale w-5"></i> Justicia</button>
-                <button id="navRegister" onclick="nav('register')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="register"><i class="fas fa-plus-circle w-5"></i> Nueva Partida</button>
-                <button onclick="nav('history')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="history"><i class="fas fa-history w-5"></i> Historial</button>
-                <button id="navSettings" onclick="nav('settings')" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium" data-target="settings"><i class="fas fa-cog w-5"></i> Configuración</button>
+                <button onclick="nav('dashboard')"
+                    class="nav-btn active flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
+                    data-target="dashboard"><i class="fas fa-chart-pie w-5"></i> Dashboard</button>
+                <button onclick="nav('analytics')"
+                    class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
+                    data-target="analytics"><i class="fas fa-chart-line w-5"></i> Analytics</button>
+                <button onclick="nav('justice')"
+                    class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
+                    data-target="justice"><i class="fas fa-balance-scale w-5"></i> Justicia</button>
+                <button id="navRegister" onclick="nav('register')"
+                    class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
+                    data-target="register"><i class="fas fa-plus-circle w-5"></i> Nueva Partida</button>
+                <button onclick="nav('history')"
+                    class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
+                    data-target="history"><i class="fas fa-history w-5"></i> Historial</button>
+                <button id="navSettings" onclick="nav('settings')"
+                    class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-left text-sm font-medium"
+                    data-target="settings"><i class="fas fa-cog w-5"></i> Configuración</button>
             </div>
         </nav>
 
         <main class="max-w-5xl mx-auto p-4 md:p-8 relative z-10">
             <section id="dashboard" class="section active">
-                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-neon-violet">📊</span> Estadísticas</h2>
-                <div id="dashboardAlert" class="hidden mb-6 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-red-500/20 transition-all" onclick="nav('justice')"><div class="flex items-center gap-3"><div class="animate-pulse w-2 h-2 bg-red-500 rounded-full"></div><span class="text-red-300 text-sm font-bold">¡Hay sanciones activas!</span></div><i class="fas fa-chevron-right text-red-400"></i></div>
-                <div class="glass p-4 rounded-2xl mb-6 text-center"><p class="text-slate-400 text-xs uppercase mb-1">Total Partidas Jugadas</p><p id="kpiTotal" class="font-gaming text-5xl text-white">0</p></div>
-                <div class="grid md:grid-cols-2 gap-4 mb-6">
-                    <div class="mvp-card p-5 rounded-2xl relative z-10"><div class="relative z-10"><div class="flex items-center justify-between mb-3"><p class="text-slate-300 text-xs uppercase font-bold flex items-center gap-2"><i class="fas fa-trophy text-yellow-400"></i> MVP</p><button onclick="toggleRanking('players')" class="text-xs text-neon-cyan hover:underline"><span id="togglePlayersText">Ver Top 5</span> <i class="fas fa-chevron-down text-[10px]"></i></button></div><div id="mvpMain" class="flex items-center gap-4"><div class="w-14 h-14 rounded-full bg-gradient-to-br from-neon-cyan to-neon-violet flex items-center justify-center text-2xl">👑</div><div><p id="kpiMVPName" class="font-gaming text-2xl text-neon-cyan">-</p><p id="kpiMVPWins" class="text-sm text-slate-400">0 victorias</p></div></div><div id="playersRanking" class="expand-content mt-4"><div class="border-t border-slate-700 pt-3 space-y-2" id="playersRankingList"></div></div></div></div>
-                    <div class="game-card p-5 rounded-2xl"><div class="flex items-center justify-between mb-3"><p class="text-slate-300 text-xs uppercase font-bold flex items-center gap-2"><i class="fas fa-fire text-neon-pink"></i> Juego Favorito</p><button onclick="toggleRanking('games')" class="text-xs text-neon-pink hover:underline"><span id="toggleGamesText">Ver Top 5</span> <i class="fas fa-chevron-down text-[10px]"></i></button></div><div id="gameMain" class="flex items-center gap-4"><div class="w-14 h-14 rounded-full bg-gradient-to-br from-neon-pink to-neon-violet flex items-center justify-center text-2xl">🎲</div><div><p id="kpiGameName" class="font-gaming text-2xl text-neon-pink">-</p><p id="kpiGameCount" class="text-sm text-slate-400">0 partidas</p></div></div><div id="gamesRanking" class="expand-content mt-4"><div class="border-t border-slate-700 pt-3 space-y-2" id="gamesRankingList"></div></div></div>
+                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-neon-violet">📊</span>
+                    Estadísticas</h2>
+                <div id="dashboardAlert"
+                    class="hidden mb-6 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-red-500/20 transition-all"
+                    onclick="nav('justice')">
+                    <div class="flex items-center gap-3">
+                        <div class="animate-pulse w-2 h-2 bg-red-500 rounded-full"></div><span
+                            class="text-red-300 text-sm font-bold">¡Hay sanciones activas!</span>
+                    </div><i class="fas fa-chevron-right text-red-400"></i>
                 </div>
-                <div class="grid md:grid-cols-2 gap-6"><div class="glass p-5 rounded-2xl"><h3 class="text-sm font-bold mb-4 text-slate-300">Victorias</h3><div class="h-48"><canvas id="chartWins"></canvas></div></div><div class="glass p-5 rounded-2xl"><h3 class="text-sm font-bold mb-4 text-slate-300">Juegos</h3><div class="h-48"><canvas id="chartGames"></canvas></div></div></div>
+                <div class="glass p-4 rounded-2xl mb-6 text-center">
+                    <p class="text-slate-400 text-xs uppercase mb-1">Total Partidas Jugadas</p>
+                    <p id="kpiTotal" class="font-gaming text-5xl text-white">0</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                    <div class="mvp-card p-5 rounded-2xl relative z-10">
+                        <div class="relative z-10">
+                            <div class="flex items-center justify-between mb-3">
+                                <p class="text-slate-300 text-xs uppercase font-bold flex items-center gap-2"><i
+                                        class="fas fa-trophy text-yellow-400"></i> MVP</p><button
+                                    onclick="toggleRanking('players')"
+                                    class="text-xs text-neon-cyan hover:underline"><span id="togglePlayersText">Ver Top
+                                        5</span> <i class="fas fa-chevron-down text-[10px]"></i></button>
+                            </div>
+                            <div id="mvpMain" class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 rounded-full bg-gradient-to-br from-neon-cyan to-neon-violet flex items-center justify-center text-2xl">
+                                    👑</div>
+                                <div>
+                                    <p id="kpiMVPName" class="font-gaming text-2xl text-neon-cyan">-</p>
+                                    <p id="kpiMVPWins" class="text-sm text-slate-400">0 victorias</p>
+                                </div>
+                            </div>
+                            <div id="playersRanking" class="expand-content mt-4">
+                                <div class="border-t border-slate-700 pt-3 space-y-2" id="playersRankingList"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="game-card p-5 rounded-2xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-slate-300 text-xs uppercase font-bold flex items-center gap-2"><i
+                                    class="fas fa-fire text-neon-pink"></i> Juego Favorito</p><button
+                                onclick="toggleRanking('games')" class="text-xs text-neon-pink hover:underline"><span
+                                    id="toggleGamesText">Ver Top 5</span> <i
+                                    class="fas fa-chevron-down text-[10px]"></i></button>
+                        </div>
+                        <div id="gameMain" class="flex items-center gap-4">
+                            <div
+                                class="w-14 h-14 rounded-full bg-gradient-to-br from-neon-pink to-neon-violet flex items-center justify-center text-2xl">
+                                🎲</div>
+                            <div>
+                                <p id="kpiGameName" class="font-gaming text-2xl text-neon-pink">-</p>
+                                <p id="kpiGameCount" class="text-sm text-slate-400">0 partidas</p>
+                            </div>
+                        </div>
+                        <div id="gamesRanking" class="expand-content mt-4">
+                            <div class="border-t border-slate-700 pt-3 space-y-2" id="gamesRankingList"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="glass p-5 rounded-2xl">
+                        <h3 class="text-sm font-bold mb-4 text-slate-300">Victorias</h3>
+                        <div class="h-48"><canvas id="chartWins"></canvas></div>
+                    </div>
+                    <div class="glass p-5 rounded-2xl">
+                        <h3 class="text-sm font-bold mb-4 text-slate-300">Juegos</h3>
+                        <div class="h-48"><canvas id="chartGames"></canvas></div>
+                    </div>
+                </div>
             </section>
 
             <section id="analytics" class="section">
-                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2 text-neon-cyan"><i class="fas fa-chart-line"></i> Analytics</h2>
+                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2 text-neon-cyan"><i
+                        class="fas fa-chart-line"></i> Analytics</h2>
                 <div class="glass p-5 rounded-2xl mb-6">
-                    <h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2"><i class="fas fa-percentage text-neon-cyan"></i> Tasa de Efectividad (Win Rate)</h3>
-                    <p class="text-xs text-slate-500 mb-4">Porcentaje de victorias sobre partidas jugadas (Mínimo 3 partidas).</p>
+                    <h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2"><i
+                            class="fas fa-percentage text-neon-cyan"></i> Tasa de Efectividad (Win Rate)</h3>
+                    <p class="text-xs text-slate-500 mb-4">Porcentaje de victorias sobre partidas jugadas (Mínimo 3
+                        partidas).</p>
                     <div class="h-64"><canvas id="chartWinRate"></canvas></div>
                 </div>
                 <div class="glass p-5 rounded-2xl">
@@ -213,50 +756,119 @@
             </section>
 
             <section id="justice" class="section">
-                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2 text-neon-red"><span class="text-3xl">⚖️</span> Sala de Justicia</h2>
+                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2 text-neon-red"><span
+                        class="text-3xl">⚖️</span> Sala de Justicia</h2>
                 <div id="wallOfShameCard" class="mb-8 p-6 rounded-2xl transition-all duration-500"></div>
-                <div class="glass p-6 rounded-2xl"><h3 class="font-gaming text-lg mb-4 text-slate-300 flex items-center gap-2"><i class="fas fa-calendar-times text-slate-500"></i> Bitácora de Ausencias</h3><div id="absenceBoard" class="space-y-3 max-h-[500px] overflow-y-auto pr-2"><div class="text-center text-slate-500 py-4">Cargando datos...</div></div></div>
+                <div class="glass p-6 rounded-2xl">
+                    <h3 class="font-gaming text-lg mb-4 text-slate-300 flex items-center gap-2"><i
+                            class="fas fa-calendar-times text-slate-500"></i> Bitácora de Ausencias</h3>
+                    <div id="absenceBoard" class="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                        <div class="text-center text-slate-500 py-4">Cargando datos...</div>
+                    </div>
+                </div>
             </section>
 
             <section id="register" class="section">
-                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span id="registerIcon" class="text-neon-cyan">🎯</span> <span id="registerTitle">Nueva Partida</span></h2>
+                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span id="registerIcon"
+                        class="text-neon-cyan">🎯</span> <span id="registerTitle">Nueva Partida</span></h2>
                 <div id="registerCard" class="glass p-6 rounded-2xl max-w-xl mx-auto">
                     <input type="hidden" id="editMatchId" value="">
-                    <div id="editModeBanner" class="hidden mb-4 bg-amber-500/20 border border-amber-500/50 p-3 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><i class="fas fa-edit text-amber-400"></i><span class="text-amber-200 text-sm">Modo Edición</span></div><button onclick="cancelEditMatch()" class="text-xs text-amber-400 hover:text-amber-200 underline">Cancelar</button></div>
-                    <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Fecha</label><input type="date" id="inputDate" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"></div>
-                    <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Juego</label><select id="inputGame" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white" onchange="updateGameMode()"><option value="">Selecciona...</option></select><p id="gameModeHint" class="text-xs mt-2 text-neon-pink hidden"><i class="fas fa-calculator"></i> Modo Puntos</p></div>
-                    <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Participantes</label><div id="gridPlayers" class="grid grid-cols-3 gap-2"></div><p id="msgNoPlayers" class="text-xs text-red-400 mt-2 hidden">Cargando jugadores...</p></div>
-                    <div id="sectionScores" class="mb-5 hidden"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Puntajes</label><div id="gridScores" class="grid grid-cols-2 gap-3"></div></div>
-                    <div class="mb-5"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Ganador</label><select id="inputWinner" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white disabled:opacity-50" disabled><option value="">Selecciona jugadores...</option></select></div>
-                    <div class="mb-6"><label class="block text-xs text-slate-400 mb-2 uppercase font-bold">Notas</label><textarea id="inputNotes" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white text-sm" rows="2" placeholder="Comentarios..."></textarea></div>
-                    <button id="btnSubmitMatch" onclick="submitMatch()" class="w-full py-4 bg-gradient-to-r from-neon-violet to-neon-cyan rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform"><i class="fas fa-save mr-2"></i>GUARDAR PARTIDA</button>
+                    <div id="editModeBanner"
+                        class="hidden mb-4 bg-amber-500/20 border border-amber-500/50 p-3 rounded-xl flex items-center justify-between">
+                        <div class="flex items-center gap-2"><i class="fas fa-edit text-amber-400"></i><span
+                                class="text-amber-200 text-sm">Modo Edición</span></div><button
+                            onclick="cancelEditMatch()"
+                            class="text-xs text-amber-400 hover:text-amber-200 underline">Cancelar</button>
+                    </div>
+                    <div class="mb-5"><label
+                            class="block text-xs text-slate-400 mb-2 uppercase font-bold">Fecha</label><input
+                            type="date" id="inputDate"
+                            class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"></div>
+                    <div class="mb-5"><label
+                            class="block text-xs text-slate-400 mb-2 uppercase font-bold">Juego</label><select
+                            id="inputGame" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white"
+                            onchange="updateGameMode()">
+                            <option value="">Selecciona...</option>
+                        </select>
+                        <p id="gameModeHint" class="text-xs mt-2 text-neon-pink hidden"><i
+                                class="fas fa-calculator"></i> Modo Puntos</p>
+                    </div>
+                    <div class="mb-5"><label
+                            class="block text-xs text-slate-400 mb-2 uppercase font-bold">Participantes</label>
+                        <div id="gridPlayers" class="grid grid-cols-3 gap-2"></div>
+                        <p id="msgNoPlayers" class="text-xs text-red-400 mt-2 hidden">Cargando jugadores...</p>
+                    </div>
+                    <div id="sectionScores" class="mb-5 hidden"><label
+                            class="block text-xs text-slate-400 mb-2 uppercase font-bold">Puntajes</label>
+                        <div id="gridScores" class="grid grid-cols-2 gap-3"></div>
+                    </div>
+                    <div class="mb-5"><label
+                            class="block text-xs text-slate-400 mb-2 uppercase font-bold">Ganador</label><select
+                            id="inputWinner"
+                            class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white disabled:opacity-50"
+                            disabled>
+                            <option value="">Selecciona jugadores...</option>
+                        </select></div>
+                    <div class="mb-6"><label
+                            class="block text-xs text-slate-400 mb-2 uppercase font-bold">Notas</label><textarea
+                            id="inputNotes"
+                            class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white text-sm"
+                            rows="2" placeholder="Comentarios..."></textarea></div>
+                    <button id="btnSubmitMatch" onclick="submitMatch()"
+                        class="w-full py-4 bg-gradient-to-r from-neon-violet to-neon-cyan rounded-xl font-gaming font-bold text-black hover:scale-[1.02] transition-transform"><i
+                            class="fas fa-save mr-2"></i>GUARDAR PARTIDA</button>
                 </div>
             </section>
 
             <section id="history" class="section">
-                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-neon-pink">📜</span> Historial</h2>
-                <div id="listHistory" class="space-y-3 pb-20"><div class="text-center py-10 text-slate-500">Cargando datos...</div></div>
+                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-neon-pink">📜</span>
+                    Historial</h2>
+                <div id="listHistory" class="space-y-3 pb-20">
+                    <div class="text-center py-10 text-slate-500">Cargando datos...</div>
+                </div>
             </section>
 
             <section id="settings" class="section">
-                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-slate-400">⚙️</span> Ajustes</h2>
-                <div class="mb-6 bg-blue-900/20 border border-blue-500/30 p-4 rounded-xl text-center"><p class="text-sm text-blue-200">☁️ <strong>Sincronización Total:</strong> Los cambios se verán en todos los dispositivos.</p></div>
+                <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2"><span class="text-slate-400">⚙️</span>
+                    Ajustes</h2>
+                <div class="mb-6 bg-blue-900/20 border border-blue-500/30 p-4 rounded-xl text-center">
+                    <p class="text-sm text-blue-200">☁️ <strong>Sincronización Total:</strong> Los cambios se verán en
+                        todos los dispositivos.</p>
+                </div>
                 <div class="grid md:grid-cols-2 gap-6">
                     <div class="glass p-5 rounded-2xl">
                         <h3 class="font-bold mb-4 text-neon-cyan"><i class="fas fa-users"></i> Jugadores</h3>
                         <div class="bg-slate-800/50 p-3 rounded-xl mb-4 border border-slate-700">
                             <input type="hidden" id="editPlayerIndex" value="-1">
-                            <div class="grid grid-cols-2 gap-2 mb-2"><input id="playerNick" type="text" placeholder="Nickname" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-white w-full"><input id="playerReal" type="text" placeholder="Nombre Real" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-white w-full"></div>
-                            <button id="btnSavePlayer" onclick="savePlayer()" class="w-full bg-slate-700 hover:bg-neon-cyan/50 hover:text-white text-slate-300 py-2 rounded-lg text-xs font-bold transition-colors">AGREGAR JUGADOR</button><button id="btnCancelEditPlayer" onclick="cancelEditPlayer()" class="w-full mt-1 text-red-400 text-xs hidden">Cancelar Edición</button>
+                            <div class="grid grid-cols-2 gap-2 mb-2"><input id="playerNick" type="text"
+                                    placeholder="Nickname"
+                                    class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-white w-full"><input
+                                    id="playerReal" type="text" placeholder="Nombre Real"
+                                    class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-white w-full">
+                            </div>
+                            <button id="btnSavePlayer" onclick="savePlayer()"
+                                class="w-full bg-slate-700 hover:bg-neon-cyan/50 hover:text-white text-slate-300 py-2 rounded-lg text-xs font-bold transition-colors">AGREGAR
+                                JUGADOR</button><button id="btnCancelEditPlayer" onclick="cancelEditPlayer()"
+                                class="w-full mt-1 text-red-400 text-xs hidden">Cancelar Edición</button>
                         </div>
                         <div id="listPlayers" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1"></div>
                     </div>
                     <div class="glass p-5 rounded-2xl">
                         <h3 class="font-bold mb-4 text-neon-violet"><i class="fas fa-dice"></i> Juegos</h3>
                         <div class="bg-slate-800/50 p-3 rounded-xl mb-4 border border-slate-700">
-                            <input type="hidden" id="editGameIndex" value="-1"><input id="newGameName" type="text" placeholder="Nombre del juego" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm mb-2">
-                            <div class="flex gap-2 mb-2"><button onclick="setGameType('direct')" id="btnTypeDirect" class="flex-1 py-2 rounded-lg text-xs font-bold border-2 border-neon-cyan bg-neon-cyan/20 text-neon-cyan"><i class="fas fa-crown"></i> Directo</button><button onclick="setGameType('score')" id="btnTypeScore" class="flex-1 py-2 rounded-lg text-xs font-bold border-2 border-slate-600 text-slate-400"><i class="fas fa-calculator"></i> Puntos</button></div>
-                            <button id="btnSaveGame" onclick="saveGame()" class="w-full bg-slate-700 hover:bg-neon-violet/50 hover:text-white text-slate-300 py-2 rounded-lg text-xs font-bold transition-colors">AGREGAR JUEGO</button><button id="btnCancelEditGame" onclick="cancelEditGame()" class="w-full mt-1 text-red-400 text-xs hidden">Cancelar Edición</button>
+                            <input type="hidden" id="editGameIndex" value="-1"><input id="newGameName" type="text"
+                                placeholder="Nombre del juego"
+                                class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm mb-2">
+                            <div class="flex gap-2 mb-2"><button onclick="setGameType('direct')" id="btnTypeDirect"
+                                    class="flex-1 py-2 rounded-lg text-xs font-bold border-2 border-neon-cyan bg-neon-cyan/20 text-neon-cyan"><i
+                                        class="fas fa-crown"></i> Directo</button><button onclick="setGameType('score')"
+                                    id="btnTypeScore"
+                                    class="flex-1 py-2 rounded-lg text-xs font-bold border-2 border-slate-600 text-slate-400"><i
+                                        class="fas fa-calculator"></i> Puntos</button></div>
+                            <button id="btnSaveGame" onclick="saveGame()"
+                                class="w-full bg-slate-700 hover:bg-neon-violet/50 hover:text-white text-slate-300 py-2 rounded-lg text-xs font-bold transition-colors">AGREGAR
+                                JUEGO</button><button id="btnCancelEditGame" onclick="cancelEditGame()"
+                                class="w-full mt-1 text-red-400 text-xs hidden">Cancelar Edición</button>
                         </div>
                         <div id="listGames" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div>
                     </div>
@@ -265,11 +877,18 @@
         </main>
 
         <nav class="md:hidden fixed bottom-0 w-full glass border-t border-slate-800 p-2 z-50 flex justify-around">
-            <button onclick="nav('dashboard')" class="nav-btn active flex flex-col items-center p-2 rounded-lg text-xs" data-target="dashboard"><i class="fas fa-chart-pie text-lg mb-1"></i></button>
-            <button onclick="nav('analytics')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="analytics"><i class="fas fa-chart-line text-lg mb-1"></i></button>
-            <button onclick="nav('register')" id="mobRegister" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="register"><i class="fas fa-plus-circle text-2xl mb-1 text-neon-cyan"></i></button>
-            <button onclick="nav('justice')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="justice"><i class="fas fa-balance-scale text-lg mb-1"></i></button>
-            <button onclick="nav('settings')" id="mobSettings" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="settings"><i class="fas fa-cog text-lg mb-1"></i></button>
+            <button onclick="nav('dashboard')" class="nav-btn active flex flex-col items-center p-2 rounded-lg text-xs"
+                data-target="dashboard"><i class="fas fa-chart-pie text-lg mb-1"></i></button>
+            <button onclick="nav('analytics')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs"
+                data-target="analytics"><i class="fas fa-chart-line text-lg mb-1"></i></button>
+            <button onclick="nav('register')" id="mobRegister"
+                class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="register"><i
+                    class="fas fa-plus-circle text-2xl mb-1 text-neon-cyan"></i></button>
+            <button onclick="nav('justice')" class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs"
+                data-target="justice"><i class="fas fa-balance-scale text-lg mb-1"></i></button>
+            <button onclick="nav('settings')" id="mobSettings"
+                class="nav-btn flex flex-col items-center p-2 rounded-lg text-xs" data-target="settings"><i
+                    class="fas fa-cog text-lg mb-1"></i></button>
         </nav>
     </div>
 
@@ -393,7 +1012,7 @@
         }
         async function saveConfigToCloud() { config.players.sort((a, b) => a.nickname.localeCompare(b.nickname)); config.games.sort((a, b) => a.name.localeCompare(b.name)); await sbClient.from('app_config').upsert({ key: 'main_config', data: config }, { onConflict: 'key' }); renderSettings(); }
         function setupRealtime() { if (mySubscription) sbClient.removeChannel(mySubscription); mySubscription = sbClient.channel('public:all').on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => { loadAllData(); toast('Datos actualizados'); }).on('postgres_changes', { event: '*', schema: 'public', table: 'app_config' }, () => { loadAllData(); loadProfiles(); toast('Configuración actualizada'); }).subscribe(s => { if (s === 'SUBSCRIBED') setOnlineStatus(true); }); }
-        
+
         function toast(msg) { Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: msg, showConfirmButton: false, timer: 2000 }); }
         function setOnlineStatus(online) { const i = document.getElementById('statusIndicator'), d = document.getElementById('desktopStatus'); if (online) { if (i) i.classList.replace('bg-red-500', 'bg-green-500'); if (d) { d.innerText = '● Conectado'; d.className = 'text-[10px] text-green-400'; } } else { if (i) i.classList.replace('bg-green-500', 'bg-red-500'); if (d) { d.innerText = '● Desconectado'; d.className = 'text-[10px] text-red-400'; } } }
         function nav(id) {
@@ -409,7 +1028,7 @@
             const sp = Object.entries(wins).sort((a, b) => b[1] - a[1]); document.getElementById('playersRankingList').innerHTML = sp.length ? sp.slice(0, 5).map((p, i) => `<div class="flex justify-between py-2 border-b border-slate-700/50 text-sm"><span>#${i + 1} <b class="text-neon-cyan">${p[0]}</b></span><span>${p[1]} wins</span></div>`).join('') : '<p class="text-xs opacity-50">Sin datos</p>'; if (sp[0]) { document.getElementById('kpiMVPName').innerText = sp[0][0]; document.getElementById('kpiMVPWins').innerText = sp[0][1] + ' wins'; }
             const sg = Object.entries(games).sort((a, b) => b[1] - a[1]); document.getElementById('gamesRankingList').innerHTML = sg.length ? sg.slice(0, 5).map((g, i) => `<div class="flex justify-between py-2 border-b border-slate-700/50 text-sm"><span>#${i + 1} <b class="text-neon-pink">${g[0]}</b></span><span>${g[1]} partidas</span></div>`).join('') : '<p class="text-xs opacity-50">Sin datos</p>'; if (sg[0]) { document.getElementById('kpiGameName').innerText = sg[0][0]; document.getElementById('kpiGameCount').innerText = sg[0][1] + ' partidas'; }
         }
-        
+
         // --- ANALYTICS ---
         let chartWinRate;
         function renderAnalyticsModule() {
@@ -417,9 +1036,9 @@
             const stats = {};
             matches.forEach(m => {
                 m.players.forEach(p => {
-                    if(!stats[p]) stats[p] = { played: 0, wins: 0 };
+                    if (!stats[p]) stats[p] = { played: 0, wins: 0 };
                     stats[p].played++;
-                    if(p === m.winner) stats[p].wins++;
+                    if (p === m.winner) stats[p].wins++;
                 });
             });
 
@@ -437,7 +1056,7 @@
             // Render Gráfico
             const ctx = document.getElementById('chartWinRate');
             if (chartWinRate) chartWinRate.destroy();
-            
+
             const colors = ranking.map(r => r.rate >= 50 ? '#10b981' : (r.rate >= 30 ? '#f59e0b' : '#ef4444'));
 
             chartWinRate = new Chart(ctx, {
@@ -468,11 +1087,11 @@
                 table.innerHTML = ranking.map((r, i) => `
                     <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
                         <div class="flex items-center gap-3">
-                            <span class="text-slate-500 text-xs font-mono">#${i+1}</span>
+                            <span class="text-slate-500 text-xs font-mono">#${i + 1}</span>
                             <span class="font-bold text-white">${r.name}</span>
                         </div>
                         <div class="text-right">
-                            <div class="text-lg font-bold ${r.rate >= 50 ? 'text-emerald-400' : (r.rate>=30?'text-amber-400':'text-red-400')}">${r.rate}%</div>
+                            <div class="text-lg font-bold ${r.rate >= 50 ? 'text-emerald-400' : (r.rate >= 30 ? 'text-amber-400' : 'text-red-400')}">${r.rate}%</div>
                             <div class="text-[10px] text-slate-400">${r.wins} wins / ${r.played} games</div>
                         </div>
                     </div>
@@ -481,15 +1100,12 @@
         }
 
         function renderJusticeModule() {
-            const dMap = {}; matches.forEach(m => { const d = m.played_date || m.created_at.split('T')[0]; if (!dMap[d]) dMap[d] = new Set(); m.players.forEach(p => dMap[d].add(p)); });
-            const uDates = Object.keys(dMap).sort().reverse(); const wall = document.getElementById('wallOfShameCard'); const alert = document.getElementById('dashboardAlert');
-            if (uDates.length < 3) { wall.innerHTML = '<p class="text-center opacity-50 text-sm">Faltan datos (mínimo 3 fechas)</p>'; alert.classList.add('hidden'); }
-            else {
-                const l3 = uDates.slice(0, 3); const off = config.players.filter(p => !dMap[l3[0]].has(p.nickname) && !dMap[l3[1]].has(p.nickname) && !dMap[l3[2]].has(p.nickname)).map(p => p.nickname);
-                if (off.length > 0) { wall.className = 'glass-danger p-6 rounded-2xl animate-pulse'; wall.innerHTML = `<h3 class="text-red-500 font-bold mb-2">💀 WALL OF SHAME</h3><div class="flex flex-wrap gap-2">${off.map(o => `<span class="bg-red-900 text-red-200 px-2 rounded">${o}</span>`).join('')}</div>`; alert.classList.remove('hidden'); }
-                else { wall.className = 'glass-success p-6 rounded-2xl'; wall.innerHTML = '<h3 class="text-emerald-400 font-bold">✨ Zona Segura</h3><p class="text-sm">Nadie tiene 3 faltas seguidas.</p>'; alert.classList.add('hidden'); }
-            }
-            document.getElementById('absenceBoard').innerHTML = uDates.map(d => `<div class="flex justify-between p-2 border-b border-slate-700 text-xs"><span>${new Date(d).toLocaleDateString()}</span><span class="text-slate-400">${config.players.filter(p => !dMap[d].has(p.nickname)).map(p => p.nickname).join(', ') || 'Todos presentes'}</span></div>`).join('');
+            const datesMap = {}; matches.forEach(m => { const d = m.played_date || m.created_at.split('T')[0]; if (!datesMap[d]) datesMap[d] = new Set(); m.players.forEach(p => datesMap[d].add(p)); });
+            const uniqueDates = Object.keys(datesMap).sort().reverse(); const wallDiv = document.getElementById('wallOfShameCard'); const alertDiv = document.getElementById('dashboardAlert');
+            if (uniqueDates.length < 3) { wallDiv.className = 'glass p-6 rounded-2xl text-center'; wallDiv.innerHTML = `<h3 class="text-slate-400 font-bold mb-2">Datos Insuficientes</h3><p class="text-xs text-slate-500">Se necesitan 3 fechas para calcular sanciones.</p>`; alertDiv.classList.add('hidden'); }
+            else { const last3 = uniqueDates.slice(0, 3); const offenders = []; config.players.forEach(obj => { const p = obj.nickname; if (!datesMap[last3[0]].has(p) && !datesMap[last3[1]].has(p) && !datesMap[last3[2]].has(p)) offenders.push(p); }); if (offenders.length > 0) { wallDiv.className = 'glass-danger p-6 rounded-2xl border border-red-500 animate-pulse'; wallDiv.innerHTML = `<h3 class="font-gaming text-2xl text-red-500 mb-2 flex items-center justify-center gap-3"><i class="fas fa-skull"></i> WALL OF SHAME</h3><p class="text-red-200 text-sm text-center mb-4">Ausentes 3 fechas seguidas:</p><div class="flex flex-wrap justify-center gap-3">${offenders.map(o => `<span class="bg-red-900 text-red-200 px-4 py-2 rounded-full font-bold border border-red-500">${o}</span>`).join('')}</div>`; alertDiv.classList.remove('hidden'); } else { wallDiv.className = 'glass-success p-6 rounded-2xl text-center'; wallDiv.innerHTML = `<h3 class="font-gaming text-emerald-400 text-xl mb-2"><i class="fas fa-check-circle"></i> Zona Segura</h3><p class="text-emerald-200 text-sm">Nadie tiene 3 faltas consecutivas.</p>`; alertDiv.classList.add('hidden'); } }
+            const boardDiv = document.getElementById('absenceBoard'); if (uniqueDates.length === 0) { boardDiv.innerHTML = '<p class="text-center text-slate-500">Sin datos</p>'; return; }
+            boardDiv.innerHTML = uniqueDates.map(date => { const presentSet = datesMap[date]; const absentList = config.players.filter(obj => !presentSet.has(obj.nickname)).map(obj => obj.nickname); const [y, m, d] = date.split('-'); const dObj = new Date(y, m - 1, d); const niceDate = dObj.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }); return `<div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700"><div class="flex items-center gap-3 min-w-[80px]"><div class="bg-slate-700 px-2 py-1 rounded text-xs font-bold text-slate-300 text-center">${niceDate}</div></div><div class="flex-1 text-right">${absentList.length > 0 ? `<div class="flex flex-wrap justify-end gap-1">${absentList.map(a => `<span class="text-[10px] bg-red-900/40 text-red-300 px-2 py-0.5 rounded border border-red-900">${a}</span>`).join('')}</div>` : `<span class="text-xs text-emerald-400 font-bold">Asistencia Perfecta</span>`}</div></div>`; }).join('');
         }
         function updateUI() {
             document.getElementById('kpiTotal').innerText = matches.length;
@@ -519,4 +1135,5 @@
         let chartWins, chartGames; function initCharts() { Chart.defaults.color = '#64748b'; Chart.defaults.borderColor = '#334155'; chartWins = new Chart(document.getElementById('chartWins'), { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#a855f7', '#22d3ee', '#ec4899', '#f59e0b', '#10b981'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } } } }); chartGames = new Chart(document.getElementById('chartGames'), { type: 'bar', data: { labels: [], datasets: [{ label: 'Partidas', data: [], backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } } }); } function updateCharts(w, g) { chartWins.data.labels = Object.keys(w); chartWins.data.datasets[0].data = Object.values(w); chartWins.update(); chartGames.data.labels = Object.keys(g); chartGames.data.datasets[0].data = Object.values(g); chartGames.update(); }
     </script>
 </body>
+
 </html>
