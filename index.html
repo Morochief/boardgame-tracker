@@ -1004,14 +1004,27 @@
         }
         function updateCurrentUserBadge() {
             if (!currentUser) return;
-            console.log('Updating Badge:', currentUser);
             const av = document.getElementById('currentUserAvatar');
-            document.getElementById('currentUserName').innerText = currentUser.name;
-            av.className = `w-8 h-8 rounded-lg flex items-center justify-center text-lg text-white font-bold avatar-${currentUser.color || 'violet'} relative`;
+            if (!av) return;
+            document.getElementById('currentUserName').innerText = currentUser.name || 'Usuario';
+
+            // Force styles manually to ensure visibility
+            av.style.width = '32px';
+            av.style.height = '32px';
+            av.style.display = 'flex';
+            av.style.alignItems = 'center';
+            av.style.justifyContent = 'center';
+            av.style.borderRadius = '8px';
+            av.style.position = 'relative';
+
+            // Apply color class but also fallback background
+            const color = currentUser.color || 'violet';
+            av.className = `text-lg text-white font-bold avatar-${color}`;
+
             const emoji = currentUser.emoji || '😀';
-            console.log('Emoji details:', emoji, currentUser);
-            const observerBadge = currentUser.isObserver ? '<div class="absolute -top-1 -right-1 text-[10px] bg-black/50 rounded-full w-4 h-4 flex items-center justify-center backdrop-blur-sm border border-white/20">👁️</div>' : '';
-            av.innerHTML = `<span style="background: white; color: red; z-index: 10; position: relative; padding: 2px;">${emoji}</span>${observerBadge}`;
+            const observerHtml = currentUser.isObserver ? '<div style="position:absolute; top:-4px; right:-4px; font-size:10px; background:rgba(0,0,0,0.5); border-radius:50%; padding:2px;">👁️</div>' : '';
+
+            av.innerHTML = emoji + observerHtml;
         }
         function applyObserverRestrictions() {
             const isObs = currentUser && currentUser.isObserver;
