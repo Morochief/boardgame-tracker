@@ -452,6 +452,94 @@
         .observer-hidden {
             display: none !important;
         }
+
+        /* Activity Heatmap */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(53, 1fr);
+            gap: 2px;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 2px;
+            min-width: 8px;
+        }
+
+        .heatmap-0 {
+            background: #1e293b;
+        }
+
+        .heatmap-1 {
+            background: #166534;
+        }
+
+        .heatmap-2 {
+            background: #22c55e;
+        }
+
+        .heatmap-3 {
+            background: #4ade80;
+        }
+
+        .heatmap-4 {
+            background: #86efac;
+        }
+
+        /* Head to Head Matrix */
+        .h2h-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+
+        .h2h-table th,
+        .h2h-table td {
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        .h2h-table th {
+            background: #1e293b;
+            font-weight: bold;
+        }
+
+        .h2h-win {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        .h2h-loss {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .h2h-tie {
+            background: rgba(234, 179, 8, 0.2);
+            color: #fbbf24;
+        }
+
+        /* Streak Badge */
+        .streak-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .streak-fire {
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            color: white;
+        }
+
+        .streak-normal {
+            background: #334155;
+            color: #94a3b8;
+        }
     </style>
 </head>
 
@@ -746,6 +834,28 @@
             <section id="analytics" class="section">
                 <h2 class="font-gaming text-2xl mb-6 flex items-center gap-2 text-neon-cyan"><i
                         class="fas fa-chart-line"></i> Analytics</h2>
+
+                <!-- Win Streaks -->
+                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                    <div class="glass p-5 rounded-2xl">
+                        <h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2">
+                            <i class="fas fa-fire-alt text-orange-500"></i> Racha Actual
+                        </h3>
+                        <div id="currentStreaks" class="space-y-3">
+                            <p class="text-slate-500 text-sm">Cargando...</p>
+                        </div>
+                    </div>
+                    <div class="glass p-5 rounded-2xl">
+                        <h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2">
+                            <i class="fas fa-trophy text-yellow-500"></i> Mejor Racha Histórica
+                        </h3>
+                        <div id="bestStreaks" class="space-y-3">
+                            <p class="text-slate-500 text-sm">Cargando...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Win Rate Chart -->
                 <div class="glass p-5 rounded-2xl mb-6">
                     <h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2"><i
                             class="fas fa-percentage text-neon-cyan"></i> Tasa de Efectividad (Win Rate)</h3>
@@ -753,6 +863,55 @@
                         partidas).</p>
                     <div class="h-64"><canvas id="chartWinRate"></canvas></div>
                 </div>
+
+                <!-- Monthly Trend Chart -->
+                <div class="glass p-5 rounded-2xl mb-6">
+                    <h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2">
+                        <i class="fas fa-chart-area text-purple-400"></i> Tendencia Mensual de Victorias
+                    </h3>
+                    <div class="h-64"><canvas id="chartTrend"></canvas></div>
+                </div>
+
+                <!-- Head to Head -->
+                <div class="glass p-5 rounded-2xl mb-6">
+                    <h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2">
+                        <i class="fas fa-users text-blue-400"></i> Head to Head
+                    </h3>
+                    <p class="text-xs text-slate-500 mb-4">Récord directo entre jugadores (victorias en partidas donde
+                        ambos participaron)</p>
+                    <div class="overflow-x-auto">
+                        <div id="headToHeadMatrix"></div>
+                    </div>
+                </div>
+
+                <!-- Activity Heatmap -->
+                <div class="glass p-5 rounded-2xl mb-6">
+                    <h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2">
+                        <i class="fas fa-calendar-alt text-green-400"></i> Actividad (Último Año)
+                    </h3>
+                    <div class="overflow-x-auto py-2">
+                        <div id="activityHeatmap" class="heatmap-grid"></div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-3 text-xs text-slate-500">
+                        <span>Menos</span>
+                        <div class="w-3 h-3 rounded heatmap-0"></div>
+                        <div class="w-3 h-3 rounded heatmap-1"></div>
+                        <div class="w-3 h-3 rounded heatmap-2"></div>
+                        <div class="w-3 h-3 rounded heatmap-3"></div>
+                        <div class="w-3 h-3 rounded heatmap-4"></div>
+                        <span>Más</span>
+                    </div>
+                </div>
+
+                <!-- Wins by Game -->
+                <div class="glass p-5 rounded-2xl mb-6">
+                    <h3 class="font-bold mb-4 text-slate-300 flex items-center gap-2">
+                        <i class="fas fa-dice text-pink-400"></i> Victorias por Juego
+                    </h3>
+                    <div id="winsByGame" class="space-y-4"></div>
+                </div>
+
+                <!-- Performance Table -->
                 <div class="glass p-5 rounded-2xl">
                     <h3 class="font-bold mb-4 text-slate-300">Detalle de Rendimiento</h3>
                     <div id="analyticsTable" class="space-y-2"></div>
@@ -1075,9 +1234,10 @@
         }
 
         // --- ANALYTICS ---
-        let chartWinRate;
+        let chartWinRate, chartTrend;
+
         function renderAnalyticsModule() {
-            // Calcular Stats
+            // === 1. CALCULATE STATS ===
             const stats = {};
             matches.forEach(m => {
                 m.players.forEach(p => {
@@ -1087,7 +1247,6 @@
                 });
             });
 
-            // Filtrar mínimo 3 partidas y ordenar por %
             const ranking = Object.keys(stats)
                 .map(p => ({
                     name: p,
@@ -1098,50 +1257,274 @@
                 .filter(p => p.played >= 3)
                 .sort((a, b) => b.rate - a.rate);
 
-            // Render Gráfico
+            // === 2. WIN RATE CHART ===
             const ctx = document.getElementById('chartWinRate');
             if (chartWinRate) chartWinRate.destroy();
-
             const colors = ranking.map(r => r.rate >= 50 ? '#10b981' : (r.rate >= 30 ? '#f59e0b' : '#ef4444'));
-
             chartWinRate = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ranking.map(r => r.name),
-                    datasets: [{
-                        label: 'Win Rate %',
-                        data: ranking.map(r => r.rate),
-                        backgroundColor: colors,
-                        borderRadius: 4
-                    }]
+                    datasets: [{ label: 'Win Rate %', data: ranking.map(r => r.rate), backgroundColor: colors, borderRadius: 4 }]
                 },
                 options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { x: { max: 100, ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#fff' } } }
                 }
             });
 
-            // Render Tabla
+            // === 3. PERFORMANCE TABLE ===
             const table = document.getElementById('analyticsTable');
             if (ranking.length === 0) {
-                table.innerHTML = '<p class="text-center text-slate-500 py-4">Se necesitan mínimo 3 partidas por jugador para calcular estadísticas.</p>';
+                table.innerHTML = '<p class="text-center text-slate-500 py-4">Se necesitan mínimo 3 partidas por jugador.</p>';
             } else {
                 table.innerHTML = ranking.map((r, i) => `
-                        <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
-                            <div class="flex items-center gap-3">
-                                <span class="text-slate-500 text-xs font-mono">#${i + 1}</span>
-                                <span class="font-bold text-white">${r.name}</span>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-lg font-bold ${r.rate >= 50 ? 'text-emerald-400' : (r.rate >= 30 ? 'text-amber-400' : 'text-red-400')}">${r.rate}%</div>
-                                <div class="text-[10px] text-slate-400">${r.wins} wins / ${r.played} games</div>
-                            </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                        <div class="flex items-center gap-3">
+                            <span class="text-slate-500 text-xs font-mono">#${i + 1}</span>
+                            <span class="font-bold text-white">${r.name}</span>
                         </div>
-                    `).join('');
+                        <div class="text-right">
+                            <div class="text-lg font-bold ${r.rate >= 50 ? 'text-emerald-400' : (r.rate >= 30 ? 'text-amber-400' : 'text-red-400')}">${r.rate}%</div>
+                            <div class="text-[10px] text-slate-400">${r.wins} wins / ${r.played} games</div>
+                        </div>
+                    </div>
+                `).join('');
             }
+
+            // === 4. WIN STREAKS ===
+            renderStreaks();
+
+            // === 5. TREND CHART ===
+            renderTrendChart();
+
+            // === 6. HEAD TO HEAD ===
+            renderHeadToHead();
+
+            // === 7. ACTIVITY HEATMAP ===
+            renderActivityHeatmap();
+
+            // === 8. WINS BY GAME ===
+            renderWinsByGame();
+        }
+
+        function renderStreaks() {
+            // Sort matches by date
+            const sorted = [...matches].sort((a, b) => new Date(a.played_date || a.created_at) - new Date(b.played_date || b.created_at));
+
+            const playerStreaks = {};
+            sorted.forEach(m => {
+                m.players.forEach(p => {
+                    if (!playerStreaks[p]) playerStreaks[p] = { current: 0, best: 0, lastWin: false };
+                    if (m.winner === p) {
+                        playerStreaks[p].current++;
+                        if (playerStreaks[p].current > playerStreaks[p].best) playerStreaks[p].best = playerStreaks[p].current;
+                        playerStreaks[p].lastWin = true;
+                    } else {
+                        playerStreaks[p].current = 0;
+                        playerStreaks[p].lastWin = false;
+                    }
+                });
+            });
+
+            // Current Streaks (only show if > 0)
+            const currentDiv = document.getElementById('currentStreaks');
+            const currentList = Object.entries(playerStreaks)
+                .filter(([_, s]) => s.current > 0)
+                .sort((a, b) => b[1].current - a[1].current);
+
+            if (currentList.length === 0) {
+                currentDiv.innerHTML = '<p class="text-slate-500 text-sm">Nadie tiene racha activa.</p>';
+            } else {
+                currentDiv.innerHTML = currentList.map(([name, s]) => `
+                    <div class="flex justify-between items-center">
+                        <span class="text-white">${name}</span>
+                        <span class="streak-badge ${s.current >= 3 ? 'streak-fire' : 'streak-normal'}">
+                            🔥 ${s.current} ${s.current === 1 ? 'victoria' : 'victorias'}
+                        </span>
+                    </div>
+                `).join('');
+            }
+
+            // Best Streaks
+            const bestDiv = document.getElementById('bestStreaks');
+            const bestList = Object.entries(playerStreaks)
+                .filter(([_, s]) => s.best > 0)
+                .sort((a, b) => b[1].best - a[1].best)
+                .slice(0, 5);
+
+            if (bestList.length === 0) {
+                bestDiv.innerHTML = '<p class="text-slate-500 text-sm">Sin datos.</p>';
+            } else {
+                bestDiv.innerHTML = bestList.map(([name, s], i) => `
+                    <div class="flex justify-between items-center">
+                        <span class="text-white">${i === 0 ? '👑 ' : ''}${name}</span>
+                        <span class="text-yellow-400 font-bold">${s.best} seguidas</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function renderTrendChart() {
+            const ctx = document.getElementById('chartTrend');
+            if (chartTrend) chartTrend.destroy();
+
+            // Group wins by month and player
+            const monthlyWins = {};
+            const players = new Set();
+
+            matches.forEach(m => {
+                const date = new Date(m.played_date || m.created_at);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                if (!monthlyWins[monthKey]) monthlyWins[monthKey] = {};
+                if (!monthlyWins[monthKey][m.winner]) monthlyWins[monthKey][m.winner] = 0;
+                monthlyWins[monthKey][m.winner]++;
+                players.add(m.winner);
+            });
+
+            const months = Object.keys(monthlyWins).sort().slice(-6); // Last 6 months
+            const topPlayers = [...players].slice(0, 5); // Top 5 players
+            const colorPalette = ['#22d3ee', '#a855f7', '#ec4899', '#f59e0b', '#10b981'];
+
+            const datasets = topPlayers.map((player, i) => ({
+                label: player,
+                data: months.map(m => monthlyWins[m]?.[player] || 0),
+                borderColor: colorPalette[i % colorPalette.length],
+                backgroundColor: colorPalette[i % colorPalette.length] + '33',
+                fill: false,
+                tension: 0.3
+            }));
+
+            chartTrend = new Chart(ctx, {
+                type: 'line',
+                data: { labels: months.map(m => { const [y, mo] = m.split('-'); return new Date(y, mo - 1).toLocaleDateString('es-ES', { month: 'short' }); }), datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#94a3b8' } } },
+                    scales: { x: { ticks: { color: '#94a3b8' } }, y: { beginAtZero: true, ticks: { color: '#94a3b8' } } }
+                }
+            });
+        }
+
+        function renderHeadToHead() {
+            const container = document.getElementById('headToHeadMatrix');
+            const playerNames = config.players.map(p => p.nickname);
+
+            if (playerNames.length < 2) {
+                container.innerHTML = '<p class="text-slate-500 text-sm">Se necesitan al menos 2 jugadores.</p>';
+                return;
+            }
+
+            // Build H2H matrix
+            const h2h = {};
+            playerNames.forEach(p1 => {
+                h2h[p1] = {};
+                playerNames.forEach(p2 => { h2h[p1][p2] = 0; });
+            });
+
+            matches.forEach(m => {
+                if (m.winner && h2h[m.winner]) {
+                    m.players.forEach(p => {
+                        if (p !== m.winner && h2h[m.winner][p] !== undefined) {
+                            h2h[m.winner][p]++;
+                        }
+                    });
+                }
+            });
+
+            // Render table
+            let html = '<table class="h2h-table"><thead><tr><th></th>';
+            playerNames.forEach(p => html += `<th>${p}</th>`);
+            html += '</tr></thead><tbody>';
+
+            playerNames.forEach(p1 => {
+                html += `<tr><th>${p1}</th>`;
+                playerNames.forEach(p2 => {
+                    if (p1 === p2) {
+                        html += '<td class="text-slate-600">-</td>';
+                    } else {
+                        const wins = h2h[p1][p2];
+                        const losses = h2h[p2][p1];
+                        const cellClass = wins > losses ? 'h2h-win' : (wins < losses ? 'h2h-loss' : 'h2h-tie');
+                        html += `<td class="${cellClass}">${wins}-${losses}</td>`;
+                    }
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderActivityHeatmap() {
+            const container = document.getElementById('activityHeatmap');
+
+            // Count matches per day (last 365 days)
+            const dayCounts = {};
+            const today = new Date();
+            const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+
+            matches.forEach(m => {
+                const date = m.played_date || m.created_at.split('T')[0];
+                dayCounts[date] = (dayCounts[date] || 0) + 1;
+            });
+
+            // Generate 365 cells
+            let html = '';
+            const current = new Date(oneYearAgo);
+            while (current <= today) {
+                const dateStr = current.toISOString().split('T')[0];
+                const count = dayCounts[dateStr] || 0;
+                const level = count === 0 ? 0 : count === 1 ? 1 : count === 2 ? 2 : count <= 4 ? 3 : 4;
+                const niceDate = current.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+                html += `<div class="heatmap-cell heatmap-${level}" title="${niceDate}: ${count} partidas"></div>`;
+                current.setDate(current.getDate() + 1);
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderWinsByGame() {
+            const container = document.getElementById('winsByGame');
+
+            // Group wins by game and player
+            const gameStats = {};
+            matches.forEach(m => {
+                if (!gameStats[m.game]) gameStats[m.game] = { total: 0, winners: {} };
+                gameStats[m.game].total++;
+                if (!gameStats[m.game].winners[m.winner]) gameStats[m.game].winners[m.winner] = 0;
+                gameStats[m.game].winners[m.winner]++;
+            });
+
+            const games = Object.entries(gameStats).sort((a, b) => b[1].total - a[1].total);
+
+            if (games.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 text-sm">Sin datos.</p>';
+                return;
+            }
+
+            container.innerHTML = games.map(([game, stats]) => {
+                const topWinners = Object.entries(stats.winners)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3);
+
+                return `
+                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="font-bold text-white flex items-center gap-2">🎲 ${game}</span>
+                            <span class="text-xs text-slate-400">${stats.total} partidas</span>
+                        </div>
+                        <div class="flex gap-2 flex-wrap">
+                            ${topWinners.map(([player, wins], i) => `
+                                <span class="text-xs px-2 py-1 rounded ${i === 0 ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' : 'bg-slate-700 text-slate-300'}">
+                                    ${i === 0 ? '👑 ' : ''}${player}: ${wins}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function renderJusticeModule() {
