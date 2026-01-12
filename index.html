@@ -1604,10 +1604,10 @@
         }
         function applyObserverRestrictions() {
             const isObs = currentUser && currentUser.isObserver;
-            document.getElementById('navRegister').classList.toggle('observer-hidden', isObs);
-            document.getElementById('navSettings').classList.toggle('observer-hidden', isObs);
-            document.getElementById('mobRegister').classList.toggle('observer-hidden', isObs);
-            document.getElementById('mobSettings').classList.toggle('observer-hidden', isObs);
+            document.getElementById('navRegister')?.classList.toggle('observer-hidden', isObs);
+            document.getElementById('navSettings')?.classList.toggle('observer-hidden', isObs);
+            document.getElementById('mobRegister')?.classList.toggle('observer-hidden', isObs);
+            document.getElementById('mobSettings')?.classList.toggle('observer-hidden', isObs);
         }
         function logout() { Swal.fire({ title: '¿Cerrar sesión?', icon: 'question', showCancelButton: true, confirmButtonText: 'Sí', cancelButtonText: 'No', background: '#1e293b', color: '#fff' }).then(res => { if (res.isConfirmed) { currentUser = null; sessionStorage.removeItem('currentUser'); location.reload(); } }); }
 
