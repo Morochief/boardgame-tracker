@@ -462,7 +462,8 @@
         <div class="glass-admin rounded-3xl p-8 max-w-md w-full text-center relative z-10">
             <div
                 class="w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-shield-alt text-4xl text-white"></i></div>
+                <i class="fas fa-shield-alt text-4xl text-white"></i>
+            </div>
             <h2 class="font-gaming text-2xl text-yellow-400 mb-2">Configuración Inicial</h2>
             <p class="text-slate-400 text-sm mb-6">Creá tu PIN de Administrador.<br><strong
                     class="text-yellow-300">¡Guardalo bien!</strong></p>
@@ -495,7 +496,8 @@
                 <div class="inline-flex items-center gap-3 mb-4">
                     <div
                         class="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-violet to-neon-cyan flex items-center justify-center">
-                        <i class="fas fa-dice-d20 text-3xl text-white"></i></div>
+                        <i class="fas fa-dice-d20 text-3xl text-white"></i>
+                    </div>
                 </div>
                 <h1
                     class="font-gaming text-3xl md:text-4xl bg-gradient-to-r from-neon-cyan to-neon-violet bg-clip-text text-transparent">
@@ -514,7 +516,8 @@
         <div class="glass-admin rounded-3xl p-8 max-w-sm w-full text-center">
             <div
                 class="w-16 h-16 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-shield-alt text-2xl text-white"></i></div>
+                <i class="fas fa-shield-alt text-2xl text-white"></i>
+            </div>
             <h3 class="font-gaming text-xl text-yellow-400 mb-2">Acceso Admin</h3>
             <div class="pin-container" id="adminPinContainer"><input type="password" maxlength="1" class="pin-digit"
                     data-index="0" inputmode="numeric"><input type="password" maxlength="1" class="pin-digit"
@@ -637,7 +640,8 @@
             <div class="flex items-center gap-3 mb-10">
                 <div
                     class="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-violet to-neon-cyan flex items-center justify-center">
-                    <i class="fas fa-dice-d20 text-white"></i></div>
+                    <i class="fas fa-dice-d20 text-white"></i>
+                </div>
                 <div>
                     <h1 class="font-gaming font-bold text-lg">BG TRACKER</h1>
                     <p id="desktopStatus" class="text-[10px] text-red-400">● Desconectado</p>
@@ -930,7 +934,17 @@
         function closeAdminPinModal() { document.getElementById('adminPinModal').classList.add('hidden'); isAdminMode = false; }
         function verifyAdminPin() { const enteredPin = getPinFromContainer('adminPinContainer'); if (simpleHash(enteredPin) === adminPin) { closeAdminPinModal(); isAdminMode = true; renderProfiles(); Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Modo Admin', showConfirmButton: false, timer: 1500, background: '#1e293b', color: '#fff' }); } else { document.getElementById('adminPinError').classList.remove('hidden'); shakeContainer('adminPinContainer'); setTimeout(() => clearPinContainer('adminPinContainer'), 500); } }
 
-        async function loadProfiles() { try { const { data } = await sbClient.from('app_config').select('data').eq('key', 'user_profiles').single(); if (data && data.data) { profiles = Array.isArray(data.data) ? data.data : (data.data.data || []); } else { profiles = []; } if (!document.getElementById('loginScreen').classList.contains('hidden')) renderProfiles(); } catch (e) { profiles = []; } }
+        async function loadProfiles() {
+            try {
+                const { data } = await sbClient.from('app_config').select('data').eq('key', 'user_profiles').single();
+                if (data && data.data) { profiles = Array.isArray(data.data) ? data.data : (data.data.data || []); } else { profiles = []; }
+                if (currentUser) {
+                    const fresh = profiles.find(p => p.id === currentUser.id);
+                    if (fresh) { currentUser = fresh; sessionStorage.setItem('currentUser', JSON.stringify(currentUser)); updateCurrentUserBadge(); }
+                }
+                if (!document.getElementById('loginScreen').classList.contains('hidden')) renderProfiles();
+            } catch (e) { profiles = []; }
+        }
         async function saveProfiles() { await sbClient.from('app_config').upsert({ key: 'user_profiles', data: profiles }, { onConflict: 'key' }); }
         function renderProfiles() {
             const grid = document.getElementById('profilesGrid'); const manageBtn = document.getElementById('btnManageProfiles');
@@ -989,7 +1003,8 @@
         function updateCurrentUserBadge() {
             if (!currentUser) return;
             const av = document.getElementById('currentUserAvatar'); document.getElementById('currentUserName').innerText = currentUser.name;
-            av.className = `w-8 h-8 rounded-lg flex items-center justify-center text-lg avatar-${currentUser.color}`; av.innerText = currentUser.emoji;
+            av.className = `w-8 h-8 rounded-lg flex items-center justify-center text-lg avatar-${currentUser.color} relative`;
+            av.innerHTML = (currentUser.emoji || '😀') + (currentUser.isObserver ? '<div class="absolute -top-1 -right-1 text-[10px] bg-black/50 rounded-full w-4 h-4 flex items-center justify-center backdrop-blur-sm border border-white/20">👁️</div>' : '');
         }
         function applyObserverRestrictions() {
             const isObs = currentUser && currentUser.isObserver;
